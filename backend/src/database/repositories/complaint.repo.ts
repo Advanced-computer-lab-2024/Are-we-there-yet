@@ -17,6 +17,10 @@ class ComplaintRepo {
   async getMyComplaints(userId: string) {
     return await Complaint.find({ created_by: userId });
   }
+
+  async updateComplaint(complaintId: string, updatedComplaint: ComplaintType) {
+    return await Complaint.findByIdAndUpdate(complaintId, updatedComplaint, { new: true, runValidators: true });
+  }
 }
 
 export default new ComplaintRepo();

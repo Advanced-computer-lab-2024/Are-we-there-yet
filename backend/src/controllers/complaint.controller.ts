@@ -48,6 +48,18 @@ class ComplaintController {
       res.status(ResponseStatusCodes.BAD_REQUEST).send({ message: error.message, data: [] });
     }
   }
+
+  async updateComplaint(req: Request, res: Response) {
+    try {
+      const updatedComplaint = await ComplaintRepo.updateComplaint(req.params.id, req.body);
+      res
+        .status(ResponseStatusCodes.OK)
+        .send({ message: 'Complaint updated successfully', data: { updatedComplaint } });
+    } catch (error: any) {
+      logger.error(`Error updating complaint: ${error.message}`);
+      res.status(ResponseStatusCodes.BAD_REQUEST).send({ message: error.message, data: [] });
+    }
+  }
 }
 
 export default new ComplaintController();
