@@ -19,6 +19,9 @@ const complaintSchema = new Schema({
   reviews: {
     type: [reviewSchema],
   },
+  average_rating: {
+    type: Number,
+  },
   created_by: {
     type: Schema.Types.ObjectId,
     ref: 'user',

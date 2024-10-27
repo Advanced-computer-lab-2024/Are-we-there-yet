@@ -6,6 +6,7 @@ import { logger } from '../middlewares/logger.middleware';
 import { ResponseStatusCodes } from '../types/ResponseStatusCodes.types';
 import { Complaint } from '../database/models/complaint.model';
 import { User } from '../database/models/user.model';
+import { updateAvgRating } from '../database/models/review.model';
 
 const modelMap: { [key: string]: any } = {
   products: Product,
@@ -37,8 +38,8 @@ class ReviewController {
       }
       review.user = req.user.userId;
 
-      modelInstance.reviews.push(review);
-      await modelInstance.save();
+      await updateAvgRating(modelInstance, review.rating);
+      await modelInstance.updateOne({ $push: { reviews: review } });
 
       res.status(ResponseStatusCodes.OK).json({ message: 'Review added successfully' });
     } catch (error: any) {

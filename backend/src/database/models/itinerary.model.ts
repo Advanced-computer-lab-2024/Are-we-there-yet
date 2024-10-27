@@ -24,6 +24,9 @@ const itinerarySchema = new Schema(
     reviews: {
       type: [reviewSchema],
     },
+    average_rating: {
+      type: Number,
+    },
     timeline: {
       type: String,
     },

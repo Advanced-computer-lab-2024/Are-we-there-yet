@@ -71,6 +71,9 @@ const userSchema = new mongoose.Schema(
     reviews: {
       type: [reviewSchema],
     },
+    average_rating: {
+      type: Number,
+    },
     modified_by: {
       type: Schema.Types.ObjectId,
       ref: 'user',

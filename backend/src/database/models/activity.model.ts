@@ -28,6 +28,9 @@ const activitySchema = new Schema(
     reviews: {
       type: [reviewSchema],
     },
+    average_rating: {
+      type: Number,
+    },
     specialDiscounts: {
       type: Number,
       min: 0,
