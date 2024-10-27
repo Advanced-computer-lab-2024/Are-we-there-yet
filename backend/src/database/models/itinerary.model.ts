@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { locationSchema } from './location.model';
+import { reviewSchema } from './review.model';
 
 const itinerarySchema = new Schema(
   {
@@ -19,6 +20,9 @@ const itinerarySchema = new Schema(
     },
     locations: {
       type: [locationSchema],
+    },
+    reviews: {
+      type: [reviewSchema],
     },
     timeline: {
       type: String,

@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { ComplaintStatus } from '../../types/Complaint.types';
+import { reviewSchema } from './review.model';
 
 const complaintSchema = new Schema({
   title: {
@@ -14,6 +15,9 @@ const complaintSchema = new Schema({
     type: String,
     default: ComplaintStatus.PENDING,
     enum: Object.values(ComplaintStatus),
+  },
+  reviews: {
+    type: [reviewSchema],
   },
   created_by: {
     type: Schema.Types.ObjectId,

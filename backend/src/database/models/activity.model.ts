@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { locationSchema } from './location.model';
+import { reviewSchema } from './review.model';
 
 const activitySchema = new Schema(
   {
@@ -23,6 +24,9 @@ const activitySchema = new Schema(
     category: { type: Schema.Types.ObjectId, ref: 'category' },
     tags: {
       type: [{ type: Schema.Types.ObjectId, ref: 'tag' }],
+    },
+    reviews: {
+      type: [reviewSchema],
     },
     specialDiscounts: {
       type: Number,
