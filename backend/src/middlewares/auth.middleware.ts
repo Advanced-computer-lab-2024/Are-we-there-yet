@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { logger } from './logger.middleware';
+import { ResponseStatusCodes } from '../types/ResponseStatusCodes.types';
 
 interface UserPayload {
   userId: string;
@@ -20,13 +21,13 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
 
   if (!token) {
     logger.error('Access Denied');
-    res.status(401).send('Access Denied');
+    res.status(ResponseStatusCodes.UNAUTHORIZED).send('Access Denied');
     return;
   }
 
   if (req.header('Authorization')?.split(' ')[0] !== 'Bearer') {
     logger.error('Invalid Token');
-    res.status(403).send('Invalid Token');
+    res.status(ResponseStatusCodes.UNAUTHORIZED).send('Invalid Token');
     return;
   }
 
@@ -35,12 +36,12 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
     req.user = decoded;
     next();
   } catch (err) {
-    logger.error('Invalid Token:', err instanceof Error ? err.message : 'Unknown error');
-    res.status(403).send('Invalid Token');
+    logger.error('Expired Token:', err instanceof Error ? err.message : 'Unknown error');
+    res.status(ResponseStatusCodes.FORBIDDEN).send('Expired Token');
   }
 };
 
-const openPaths = ['/api/auth/register'];
+const openPaths = ['/api/auth/register', '/api/auth/login'];
 
 const authenticateUnlessOpen = (req: Request, res: Response, next: NextFunction) => {
   if (openPaths.some((path) => req.path.startsWith(path))) {

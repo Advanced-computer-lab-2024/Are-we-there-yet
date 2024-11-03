@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      unique: true,
       required: true,
     },
     password: {
@@ -68,6 +67,7 @@ const userSchema = new mongoose.Schema(
     },
     wallet: {
       type: Number,
+      default: 0,
     },
     profile_pic: {
       type: { type: Schema.Types.ObjectId, ref: 'attachment' },
@@ -87,6 +87,8 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.index({ account_type: 1, username: 1 }, { unique: true });
 
 userSchema.pre('save', function (next) {
   var user = this;

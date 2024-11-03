@@ -29,8 +29,8 @@ class UserRepository {
     return await User.updateOne({ _id: new ObjectId(id) }, { accepted: true });
   }
 
-  async findUserByEmail(email: string) {
-    return await User.find({ email: email });
+  async findUserByEmail(email: string): Promise<UserType | null> {
+    return await User.findOne({ email: email });
   }
 
   async requestAccountDeletion(id: string) {
