@@ -84,7 +84,7 @@ const userSchema = new mongoose.Schema(
     },
     rejected: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
     termsAndConditions: {
       type: Boolean,

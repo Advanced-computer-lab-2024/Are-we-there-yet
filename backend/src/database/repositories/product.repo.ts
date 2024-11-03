@@ -75,11 +75,11 @@ class ProductRepo {
   async buyProduct(productId: string, quantity: number) {
     return await Product.updateOne(
       { _id: new ObjectId(productId) },
-      { 
-        $inc: { 
-          available_quantity: -quantity,  // Decrease available quantity
-          sales: quantity                  // Increase sales by quantity sold
-        } 
+      {
+        $inc: {
+          available_quantity: -quantity, // Decrease available quantity
+          sales: quantity, // Increase sales by quantity sold
+        },
       }
     );
   }
@@ -87,6 +87,5 @@ class ProductRepo {
   async archiveProduct(productId: string) {
     return await Product.updateOne({ _id: new ObjectId(productId) }, { archive: true });
   }
-  
 }
 export default new ProductRepo();
