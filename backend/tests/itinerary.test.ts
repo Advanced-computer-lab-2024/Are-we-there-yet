@@ -48,7 +48,13 @@ let newItinerary: ItineraryType = {
   language: 'Test Language',
   price: 0,
   available_datetimes: [new Date('2022-01-01T00:00:00.000Z')],
-  accessibility: true,
+  accessibility: {
+    wheelchairAccessible: true,
+    assistiveHearingDevices: true,
+    visualAidSupport: true,
+    serviceAnimalAllowed: true,
+    accessibleParking: true,
+  },
   pick_up_location: location,
   drop_off_location: location,
 };
