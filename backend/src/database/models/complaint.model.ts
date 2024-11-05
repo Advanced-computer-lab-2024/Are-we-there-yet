@@ -21,6 +21,7 @@ const complaintSchema = new Schema({
   },
   average_rating: {
     type: Number,
+    default: 0,
   },
   created_by: {
     type: Schema.Types.ObjectId,

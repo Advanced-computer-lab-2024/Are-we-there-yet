@@ -31,6 +31,7 @@ const itinerarySchema = new Schema(
     },
     average_rating: {
       type: Number,
+      default: 0,
     },
     timeline: {
       type: String,

@@ -42,18 +42,21 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const openPaths = [
-  '/api/auth/register',
-  '/api/auth/login',
-  '/api/itineraries/get',
-  '/api/museums/getall',
-  '/api/activities',
-  '/api/attachments',
+  { path: '/api/auth/register', methods: ['POST'] },
+  { path: '/api/auth/login', methods: ['POST'] },
+  { path: '/api/itineraries/get', methods: ['GET'] },
+  { path: '/api/museums/getall', methods: ['GET'] },
+  { path: '/api/activities', methods: ['GET'] },
+  { path: '/api/attachments', methods: ['POST'] },
 ];
 
 const authenticateUnlessOpen = (req: Request, res: Response, next: NextFunction) => {
-  if (openPaths.includes(req.path)) {
+  const isOpenPath = openPaths.some((route) => route.path === req.path && route.methods.includes(req.method));
+
+  if (isOpenPath) {
     return next();
   }
+
   return authenticateToken(req, res, next);
 };
 

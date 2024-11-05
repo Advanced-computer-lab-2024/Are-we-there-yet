@@ -25,6 +25,7 @@ const productSchema = new Schema(
     },
     average_rating: {
       type: Number,
+      default: 0,
     },
     seller: {
       type: Schema.Types.ObjectId,

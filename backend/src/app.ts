@@ -14,7 +14,6 @@ app.use(cors()); // Enable CORS
 app.use(fileupload({ useTempFiles: true })); // Enable file upload
 
 // Middleware
-app.use('/api', express.static('public'));
 app.use(express.json());
 app.use(logHttpRequests);
 app.use(authenticateUnlessOpen);

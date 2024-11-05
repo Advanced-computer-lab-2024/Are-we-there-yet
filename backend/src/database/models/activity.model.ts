@@ -30,6 +30,7 @@ const activitySchema = new Schema(
     },
     average_rating: {
       type: Number,
+      default: 0,
     },
     specialDiscounts: {
       type: Number,
