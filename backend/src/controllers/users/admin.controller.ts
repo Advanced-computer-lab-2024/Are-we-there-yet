@@ -51,5 +51,4 @@ const updateAdmin = async (req: Request, res: Response) => {
   }
 };
 
-
 export { createAdmin, getAdmins, updateAdmin };
