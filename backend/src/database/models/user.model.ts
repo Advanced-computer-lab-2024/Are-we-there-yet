@@ -48,7 +48,7 @@ const companyProfileSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  specialities: {
+  specialties: {
     type: String,
   },
 });
@@ -141,6 +141,9 @@ const userSchema = new mongoose.Schema(
     },
     activity_bookings: {
       type: [{ type: Schema.Types.ObjectId, ref: 'booking' }],
+    },
+    purchased_products: {
+      type: [{ type: Schema.Types.ObjectId, ref: 'product' }],
     },
     modified_by: {
       type: Schema.Types.ObjectId,

@@ -19,6 +19,10 @@ class UserRepository {
       .populate('preferences');
   }
 
+  async getUserWithPurchasedProducts(id: string) {
+    return await User.findById(id).populate('purchased_products');
+  }
+
   async createUser(user: UserType) {
     const userRes = await User.create(user);
     return userRes;
@@ -93,10 +97,11 @@ class UserRepository {
   }
 
   async cancelItineraryBooking(id: string, booking_id: string) {
-    return await User.updateOne(
-      { _id: new ObjectId(id) },
-      { $pull: { itinerary_bookings: new ObjectId(booking_id) } }
-    );
+    return await User.updateOne({ _id: new ObjectId(id) }, { $pull: { itinerary_bookings: new ObjectId(booking_id) } });
+  }
+
+  async buyProduct(id: string, product_id: string) {
+    return await User.findByIdAndUpdate(id, { $push: { purchased_products: new ObjectId(product_id) } });
   }
 }
 

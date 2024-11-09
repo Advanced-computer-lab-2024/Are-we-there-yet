@@ -24,7 +24,6 @@ class ItineraryRepo {
   }
 
   async deleteItinerary(id: string) {
-    Validator.validateId(id, 'Invalid itinerary ID');
     return await Itinerary.deleteOne({ _id: new ObjectId(id) });
   }
 
@@ -45,8 +44,6 @@ class ItineraryRepo {
     Validator.validateId(id, 'Invalid itinerary ID');
     await Itinerary.findByIdAndUpdate(id, { active: active });
   }
-
-
 
   async getItineraryStartDate(id: string) {
     return await Itinerary.findById(id).select('timeline');

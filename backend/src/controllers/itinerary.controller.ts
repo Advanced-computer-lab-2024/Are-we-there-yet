@@ -6,6 +6,7 @@ import { accountType } from '../types/User.types';
 import ItineraryRepo from '../database/repositories/itinerary.repo';
 import BookingRepo from '../database/repositories/booking.repo';
 import currencyConverterService from '../services/currencyConverter';
+import Validator from '../utils/Validator.utils';
 
 const getItineraries = async (req: Request, res: Response) => {
   try {
@@ -112,8 +113,11 @@ const deleteItinerary = async (req: Request, res: Response) => {
   try {
     const ItineraryId: string = req.params.id;
 
+    Validator.validateId(ItineraryId, 'Invalid itinerary ID');
+
     if (await BookingRepo.checkItineraryBooked(ItineraryId)) {
       res.status(ResponseStatusCodes.FORBIDDEN).json({ message: 'Cannot delete Itinerary as it is already booked' });
+      return;
     }
     const deleteRes = await ItineraryRepo.deleteItinerary(ItineraryId);
     const response = {

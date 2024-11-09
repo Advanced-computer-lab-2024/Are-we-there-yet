@@ -277,6 +277,20 @@ const cancelItineraryBooking = async (req: Request, res: Response) => {
   }
 };
 
+const getPurchasedProducts = async (req: Request, res: Response) => {
+  try {
+    const user = await userRepo.getUserWithPurchasedProducts(req.user.userId);
+
+    res.status(ResponseStatusCodes.OK).json({
+      message: 'Purchased products fetched successfully',
+      data: { purchased_products: user?.purchased_products },
+    });
+  } catch (error: any) {
+    logger.error(`Error fetching purchased products: ${error.message}`);
+    res.status(ResponseStatusCodes.BAD_REQUEST).json({ message: error.message, data: [] });
+  }
+};
+
 export {
   getUsers,
   deleteUser,
@@ -292,4 +306,5 @@ export {
   getActivity,
   cancelActivityBooking,
   cancelItineraryBooking,
+  getPurchasedProducts,
 };

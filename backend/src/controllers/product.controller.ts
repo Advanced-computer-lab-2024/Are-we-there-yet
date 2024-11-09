@@ -4,11 +4,10 @@ import { logger } from '../middlewares/logger.middleware';
 import { ResponseStatusCodes } from '../types/ResponseStatusCodes.types';
 import { range } from '../utils/Rangify.utils';
 import { generateRanges } from '../utils/Rangify.utils';
-import { ProductType } from '../types/Product.types';
 
 import productRepo from '../database/repositories/product.repo';
-import { ReviewType } from '../types/Review.types';
 import currencyConverterService from '../services/currencyConverter';
+import userRepo from '../database/repositories/user.repo';
 
 const findProductById = async (req: Request, res: Response) => {
   try {
@@ -255,15 +254,20 @@ async function buyProduct(req: Request, res: Response) {
     const productId = req.params.id;
     const quantity = parseInt(req.body.quantity);
     const product = await productRepo.getProductById(productId);
+
     if (!product) {
       res.status(ResponseStatusCodes.NOT_FOUND).json({ message: 'Product not found', data: [] });
       return;
     }
+
     if (product.available_quantity && product.available_quantity < quantity) {
       res.status(ResponseStatusCodes.BAD_REQUEST).json({ message: 'Insufficient quantity', data: [] });
       return;
     }
+
     await productRepo.buyProduct(productId, quantity);
+    await userRepo.buyProduct(req.user.userId, productId);
+
     res.status(ResponseStatusCodes.OK).json({ message: 'Product bought successfully', data: { productId, quantity } });
   } catch (error: any) {
     logger.error(`Error buying product: ${error.message}`);

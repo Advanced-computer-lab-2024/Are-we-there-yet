@@ -23,7 +23,7 @@ export interface previousWorkType {
 export interface companyProfileType {
   industry: string;
   headquarters: string;
-  specialities?: string;
+  specialties?: string;
 }
 
 export interface UserType {
@@ -57,4 +57,5 @@ export interface UserType {
   loyalty_points: number;
   wallet?: number;
   itinerary_bookings: [Types.ObjectId];
+  purchased_products: [Types.ObjectId];
 }

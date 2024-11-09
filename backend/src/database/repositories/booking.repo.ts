@@ -21,9 +21,9 @@ class BookingRepo {
   }
 
   async checkItineraryBooked(itineraryId: string): Promise<boolean> {
-    const booking = await Booking.find({ itineraryId: itineraryId });
+    const booking = await Booking.find({ itinerary: itineraryId });
 
-    return !!booking;
+    return booking.length > 0;
   }
 }
 
