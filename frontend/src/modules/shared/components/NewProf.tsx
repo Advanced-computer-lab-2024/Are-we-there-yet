@@ -18,6 +18,8 @@ import AdvertiserProfile from "@/modules/Advertiser/components/AdvertiserProfile
 import SellerProfile from "@/modules/Seller/components/SellerProfile";
 import ProfilePicAndName from "./ProfilePicAndName";
 import { TagType } from "../types/Tag.types";
+import TourismGovernorProfile from "@/modules/TourismGovernor/components/TourismGovernorProfile";
+import { AccountType } from "../types/User.types";
 
 interface NewProfProps {
   countries?: { name: { common: string } }[];
@@ -62,7 +64,6 @@ const NewProf: React.FC<NewProfProps> = ({
       });
 
       const response = await getUser(user._id);
-
       setUser(response.data.data.user);
     } catch (error) {
       console.error("Error redeeming points:", error);
@@ -188,28 +189,27 @@ const NewProf: React.FC<NewProfProps> = ({
 
   const handleSaveWorkHistory = async (work: WorkHistory) => {
     try {
-      // review this part
       const allWorks = [work, ...(user.previous_work || [])];
-
       await updateUser(user._id, undefined, allWorks);
 
       setUser((prev) => ({
         ...prev,
-        previous_works: prev.previous_work?.unshift(work) || [],
+        previous_work: [work, ...(prev.previous_work || [])],
       }));
 
       setShowWorkHistoryModal(false);
       setEditingWorkHistory(null);
-      // toast.success("Work history updated successfully");
+      toast.success("Work history updated successfully");
     } catch (error) {
       console.error("Error updating work history:", error);
-      // toast.error("Failed to update work history");
+      toast.error("Failed to update work history");
     }
   };
 
   const onDeleteReq = async () => {
     try {
       await requestAccountDeletion();
+      toast.success("Account deletion request submitted");
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error("Request to delete account failed");
@@ -217,14 +217,12 @@ const NewProf: React.FC<NewProfProps> = ({
   };
 
   const openModal = () => {
-    modalRef.current?.open({
-      ...initialFormValues,
-    });
+    modalRef.current?.open(initialFormValues);
   };
 
   const renderProfileContent = () => {
-    switch (user.account_type.toLowerCase()) {
-      case "tourguide":
+    switch (user.account_type) {
+      case AccountType.TourGuide:
         return (
           <TourGuideProfile
             user={user}
@@ -234,13 +232,13 @@ const NewProf: React.FC<NewProfProps> = ({
           />
         );
 
-      case "advertiser":
+      case AccountType.Advertiser:
         return <AdvertiserProfile user={user} />;
 
-      case "seller":
+      case AccountType.Seller:
         return <SellerProfile user={user} />;
 
-      case "tourist":
+      case AccountType.Tourist:
         return tags === undefined ? (
           <p>No Tags Found</p>
         ) : (
@@ -250,6 +248,10 @@ const NewProf: React.FC<NewProfProps> = ({
             handleRedeemPoints={handleRedeemPoints}
           />
         );
+
+      case AccountType.TourismGovernor:
+        return <TourismGovernorProfile user={user} />;
+
       default:
         console.error("Invalid account type: ", user.account_type);
         return null;
@@ -284,7 +286,7 @@ const NewProf: React.FC<NewProfProps> = ({
                 ref={modalRef}
                 fields={Object.keys(initialFormValues)}
                 onSave={handleSave}
-                onDeleteAccount={() => onDeleteReq()}
+                onDeleteAccount={onDeleteReq}
               />
             </div>
           </div>
@@ -292,13 +294,15 @@ const NewProf: React.FC<NewProfProps> = ({
       </div>
 
       {/* Work History Modal */}
-      <WorkHistoryModal
-        editingWorkHistory={editingWorkHistory}
-        setEditingWorkHistory={setEditingWorkHistory}
-        showWorkHistoryModal={showWorkHistoryModal}
-        setShowWorkHistoryModal={setShowWorkHistoryModal}
-        handleSaveWorkHistory={handleSaveWorkHistory}
-      />
+      {user.account_type.toLowerCase() !== "tourismgovernor" && (
+        <WorkHistoryModal
+          editingWorkHistory={editingWorkHistory}
+          setEditingWorkHistory={setEditingWorkHistory}
+          showWorkHistoryModal={showWorkHistoryModal}
+          setShowWorkHistoryModal={setShowWorkHistoryModal}
+          handleSaveWorkHistory={handleSaveWorkHistory}
+        />
+      )}
     </div>
   );
 };

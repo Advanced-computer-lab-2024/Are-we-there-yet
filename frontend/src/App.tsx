@@ -59,6 +59,7 @@ import { ActivityBookings } from "./modules/Tourist/pages/Bookings/ActivityBooki
 import { ItineraryBookings } from "./modules/Tourist/pages/Bookings/ItineraryBookings";
 import { TransportationBookings } from "./modules/Tourist/pages/Bookings/TransportationBookings";
 import Booking from "./modules/Booking/pages/Booking";
+import { TourismGovernorProfile } from "./modules/TourismGovernor/App";
 
 const Login = () => {
   const { setUser } = useContext(UserContext);
@@ -162,6 +163,10 @@ const BrowserRouter = createBrowserRouter([
     errorElement: <ErrorPage />,
     loader: rootLayoutLoader,
     children: [
+      {
+        path: "/tourism-governor-profile",
+        element: <TourismGovernorProfile />,
+      },
       {
         path: "tour-guide-profile/:id",
         // element: <TourGuideProfile />,
