@@ -12,8 +12,12 @@ export const UserContext = createContext<UserContextObj>({
     password: "",
     username: "",
     account_type: AccountType.None,
+    accepted: false,
+    rejected: false,
+    deletionRequested: false,
+    termsAndConditions: false,
   },
-  setUser: () => {},
+  setUser: () => { },
 });
 
 const UserContextProvider: React.FC<{
@@ -24,6 +28,10 @@ const UserContextProvider: React.FC<{
     password: "",
     username: "",
     account_type: AccountType.None,
+    accepted: false,
+    rejected: false,
+    deletionRequested: false,
+    termsAndConditions: false,
   });
 
   const contextValue: UserContextObj = {

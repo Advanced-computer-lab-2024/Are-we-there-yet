@@ -9,6 +9,7 @@ import {
 } from "../Api/MuseumService";
 import { MuseumFormData } from "../components/MuseumForm";
 import { Museum } from "../types/museum";
+import Greeting from "@/modules/shared/components/Greeting";
 
 const AllMuseums = () => {
   const [museums, setMuseums] = useState<Museum[]>([]);
@@ -70,8 +71,7 @@ const AllMuseums = () => {
   return (
     <div>
       <div className="flex flex-col justify-end divide-y-2 divide-borders-bottomBorder p-9 text-text-primary">
-        <h1 className="py-2 text-4xl font-bold">Welcome {user.username}</h1>
-        <h3 className="py-2 text-2xl font-bold">Museums & Historical Places</h3>
+      <Greeting name = {user.username} title="Museums" signedIn />
       </div>
       <MuseumList
         museums={museums}

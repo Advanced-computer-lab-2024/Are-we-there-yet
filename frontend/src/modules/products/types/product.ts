@@ -6,7 +6,8 @@ export interface Product {
   available_quantity: number;
   attachments: string[];
   reviews: review[];
-  // rating: number;
+  sales: number;
+  archive: boolean;
   seller: string;
 }
 

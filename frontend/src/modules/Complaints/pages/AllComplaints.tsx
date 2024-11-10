@@ -5,6 +5,7 @@ import axiosInstance from "@/modules/shared/services/axiosInstance";
 import ComplaintsTable from "../components/ComplaintsTable";
 import toast from "react-hot-toast";
 import ComplaintsForm from "../components/ComplaintsForm";
+import Greeting from "@/modules/shared/components/Greeting";
 
 interface Complaint {
   _id: string;
@@ -82,8 +83,7 @@ const AllComplaints: React.FC = () => {
   return (
     <div className="p-9 text-text-primary">
       <div className="flex flex-col divide-y-2 divide-borders-bottomBorder">
-        <h1 className="py-2 text-4xl font-bold">Welcome, {user.username}</h1>
-        <h3 className="py-2 text-2xl font-bold">Complaints</h3>
+        <Greeting name = {user.username} title="Complaints" signedIn />
       </div>
       <div className="flex justify-end mt-2">
         <button 

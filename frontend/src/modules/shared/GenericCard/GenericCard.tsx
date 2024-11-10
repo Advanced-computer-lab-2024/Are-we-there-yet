@@ -9,7 +9,7 @@ interface TagType {
 }
 
 type CommonProperties = {
-  _id: string | number;
+  _id: string;
   name: string;
   category?: string;
   tags?: TagType[];
@@ -21,7 +21,7 @@ type CardProps<T extends CommonProperties> = {
   className?: string;
   children: React.ReactNode;
   onClick?: (e: React.MouseEvent<HTMLDivElement>, item: T) => void;
-  onRemove?: (id: string | number) => void;
+  onRemove?: (id: string) => void;
 };
 
 const GenericCard = <T extends CommonProperties>({
