@@ -55,7 +55,8 @@ export interface UserType {
   // Tourist
   preferences: [string];
   loyalty_points: number;
-  wallet?: number;
+  loyalty_level: number;
+  wallet: number;
   itinerary_bookings: [Types.ObjectId];
   purchased_products: [Types.ObjectId];
 }

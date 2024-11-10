@@ -126,6 +126,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    loyalty_level: {
+      type: Number,
+      default: 0,
+    },
     profile_pic: { type: Schema.Types.ObjectId, ref: 'attachment' },
     attachments: {
       type: [{ type: Schema.Types.ObjectId, ref: 'attachment' }],
