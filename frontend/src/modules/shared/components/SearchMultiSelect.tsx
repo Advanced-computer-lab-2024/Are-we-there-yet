@@ -24,7 +24,7 @@ const SearchMultiSelect: React.FC<SearchMultiSelectProps> = ({
   // Ensure options are distinct by value
   const distinctOptions = useMemo(() => {
     const uniqueOptions = new Map(
-      options.map((option) => [option.value, option]),
+      options?.map((option) => [option.value, option]),
     );
     return Array.from(uniqueOptions.values());
   }, [options]);
@@ -38,7 +38,7 @@ const SearchMultiSelect: React.FC<SearchMultiSelectProps> = ({
   }, [distinctOptions, searchTerm, selectedItems]);
 
   return (
-    <div className="relative w-full rounded-md border border-borders-primary bg-[#F4F4F4] p-4">
+    <div className="relative w-full rounded-md border border-borders-primary bg-secondary-light_grey p-4">
       <div className="mb-2 flex items-start">
         {/* Selected Items */}
         <div className="mr-2 flex flex-wrap">

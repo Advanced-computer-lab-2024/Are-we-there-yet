@@ -1,3 +1,5 @@
+import { TagType } from "./Tag.types";
+
 export enum AccountType {
   None = "None",
   Admin = "Admin",
@@ -17,25 +19,50 @@ export interface UserType {
   dob?: string;
   mobile_number?: string;
   job?: string;
-  picture?: string;
-  profile_pic?: {
-    url: string;
-    _id: string;
-  };
   name?: string;
-  accepted?: boolean;
   nationality?: string;
-
+  accepted: boolean;
+  rejected: boolean;
+  deletionRequested: boolean;
+  termsAndConditions: boolean;
+  attachments?: {
+    _id: string;
+    original_name: string;
+    url: string;
+  }[];
+  profile_pic?: {
+    _id: string;
+    url: string;
+  };
   // Tour guide
   years_of_experience?: number;
-  previous_work?: string[];
+  average_rating?: number;
+  previous_work?: {
+    title: string;
+    employmentType: string;
+    company: string;
+    startDate: string;
+    endDate: string;
+    location: string;
+    locationType: string;
+    description: string;
+    _id: string;
+  }[];
   // Advertiser
   website?: string;
   hotline?: string;
-  company_profile?: string[];
+  company_profile?: {
+    industry: string;
+    headquarters: string;
+    specialties: string;
+  };
   // Seller
   description?: string;
   // Tourist
+  loyalty_points?: number;
+  loyalty_level?: number;
   wallet?: number;
-  loyalty_points: number;
+  itinerary_bookings?: string[];
+  activity_bookings?: string[];
+  preferences?: TagType[];
 }

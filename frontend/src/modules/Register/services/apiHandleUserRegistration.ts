@@ -54,7 +54,6 @@ export async function handleUserRegistration({
 
     // Check if the response is successful and perform the redirect
     if (res.status === 200) {
-      console.log(res);
       localStorage.setItem("token", res.data.data.jwt); // Store the user ID in local storage
       // return redirect(`${successRedirect}/${res.data.data.user._id}`); // Redirect to the specified route
       return res;

@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useContext, useImperativeHandle, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Eye, EyeOff } from "lucide-react";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import { UserContext } from "../store/user-context";
 
 interface EditModalProps {
   fields: string[];
@@ -31,6 +32,7 @@ const EditModal = forwardRef(
     const [showPassword, setShowPassword] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [, setIsDeleting] = useState(false);
+    const { user } = useContext(UserContext);
 
     useImperativeHandle(ref, () => ({
       open: (initialData = {}) => {
@@ -105,7 +107,13 @@ const EditModal = forwardRef(
           value={formData[field] || ""}
           type="text"
           onChange={(e) => handleInputChange(field, e.target.value)}
-          placeholder={`Enter ${field === "YearsOfExperience" ? "Years of Experience" : field}`}
+          placeholder={`Enter ${
+            field === "YearsOfExperience"
+              ? "Years of Experience"
+              : field === "loyaltyPoints"
+                ? "Loyalty Points"
+                : field
+          }`}
           className="h-12 border-slate-200 bg-white text-base placeholder:text-slate-400 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 disabled:text-slate-500"
         />
       );
@@ -135,7 +143,9 @@ const EditModal = forwardRef(
                       ? "Years of Experience"
                       : field === "MobileNumber"
                         ? "Mobile Number"
-                        : field}
+                        : field === "loyaltyPoints"
+                          ? "Loyalty Points"
+                          : field}
                   </Label>
                   {renderField(field)}
                 </div>
@@ -144,13 +154,15 @@ const EditModal = forwardRef(
 
             <DialogFooter className="border-t border-slate-100 pt-6">
               <div className="flex w-full items-center justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  className="h-12 border-red-200 px-6 text-base text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
-                  Delete Account
-                </Button>
+                {!user.deletionRequested && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="h-12 border-red-200 px-6 text-base text-red-600 hover:bg-red-50 hover:text-red-700"
+                  >
+                    Delete Account
+                  </Button>
+                )}
                 <div className="flex">
                   <Button
                     variant="outline"

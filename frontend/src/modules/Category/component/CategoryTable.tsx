@@ -26,7 +26,7 @@ function CategoryTable({ Categories, onDeleteCategory, setCategories }: Category
   };
   return (
     <>
-      <div className="container mx-auto max-w-5xl p-4">
+      <div className="container mx-auto">
         <Table
           data={Categories}
           columns={tableColumns}

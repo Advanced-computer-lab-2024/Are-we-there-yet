@@ -80,14 +80,14 @@ const Header = ({
   const { user } = useContext(UserContext);
 
   return (
-    <header className="flex items-center justify-between bg-gray-100 p-4">
-      <div className="flex flex-col justify-end p-14 text-text-primary">
-        <div className="w-full max-w-[50vw] divide-y-2 divide-borders-bottomBorder">
+    <header className="flex items-center justify-between p-4">
+      <div className="flex flex-col justify-end py-14 text-primary-blue">
+        <div className="w-full max-w-[50vw] divide-y-2 divide-primary-green">
           <h1 className="py-4 text-4xl font-bold">Welcome {user.username}</h1>
           <h3 className="py-4 text-2xl font-bold">Categories</h3>
         </div>
       </div>
-      <div className="flex space-x-4 pr-80 pt-40">
+      <div className="flex space-x-4">
         <OpenPopupButton onClick={() => setIsCategoryPopupOpen(true)}>
           Add Category
         </OpenPopupButton>
