@@ -22,7 +22,7 @@ const Table = ({
   actions?: ActionProps;
 }) => {
   return (
-    <div className="w-full overflow-auto rounded-xl border border-secondary-light_grey bg-secondary-white/70 shadow-lg">
+    <div className="h-96 w-full resize overflow-auto rounded-xl border border-secondary-light_grey bg-secondary-white/70 shadow-lg">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
@@ -30,13 +30,13 @@ const Table = ({
               {columns.map((column, index) => (
                 <th
                   key={index}
-                  className="p-5 text-left text-input_or_label font-headline text-secondary-white first:rounded-tl-lg"
+                  className="text-nowrap p-5 text-center text-input_or_label font-headline text-secondary-white first:rounded-tl-lg"
                 >
                   {column.header}
                 </th>
               ))}
               {actions && (
-                <th className="rounded-tr-lg p-5 text-left text-input_or_label font-headline text-secondary-white">
+                <th className="rounded-tr-lg p-5 text-center text-input_or_label font-headline text-secondary-white">
                   Actions
                 </th>
               )}
@@ -51,7 +51,7 @@ const Table = ({
                 {columns.map((column, colIndex) => (
                   <td
                     key={colIndex}
-                    className="p-5 text-body text-accent-dark-blue"
+                    className="p-5 text-center text-body text-accent-dark-blue"
                   >
                     {column.render
                       ? column.render(_.get(row, column.accessor))
@@ -60,7 +60,7 @@ const Table = ({
                 ))}
                 {actions && (
                   <td className="p-5">
-                    <div className="flex items-center gap-3">
+                    <div className="flex justify-center items-center gap-3">
                       {actions.onEdit && (
                         <button
                           onClick={() => actions.onEdit?.(row._id)}

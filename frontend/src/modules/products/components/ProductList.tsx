@@ -1,19 +1,20 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Product } from "../types/product";
 import { DollarSign, Package, Plus, ShoppingCart, Star } from "lucide-react";
 import Modal, { ModalRef } from "./modal";
-import ProductForm, { ProductFormData } from "./ProductForm";
+import ProductForm, { ProductFormDataSubmit } from "./ProductForm";
 import defaultPhoto from "../assets/defaultPhoto.png";
-import mintBluePhoto from "../assets/mintBlue.jpg";
-import Xbox5 from "../assets/Xbox5.jpg";
+// import mintBluePhoto from "../assets/mintBlue.jpg";
+// import Xbox5 from "../assets/Xbox5.jpg";
 import GenericCard from "../../shared/GenericCard/GenericCard";
+import axiosInstance from "../../shared/services/axiosInstance";
 
 interface ProductListProps {
   products: Product[]; // All products
   role: "admin" | "seller" | "tourist"; // Define user roles
   onEdit?: (product: Product) => void; // Admin/Seller functionality
-  onDelete?: (productId: string | number) => void; // Admin/Seller functionality
-  onCreate?: (productData: ProductFormData) => void; // Admin/Seller functionality
+  onDelete?: (productId: string) => void; // Admin/Seller functionality
+  onCreate?: (productData: ProductFormDataSubmit) => void; // Admin/Seller functionality
 }
 
 const defaultImage = defaultPhoto;
@@ -25,6 +26,7 @@ const ProductList: React.FC<ProductListProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const [imageUrls, setImageUrls] = useState<{ [key: string]: string[] }>({});
   const [searchQuery, setSearchQuery] = useState(""); // State for search input
   const [minPrice, setMinPrice] = useState<number | "">(""); // State for minimum price filter
   const [maxPrice, setMaxPrice] = useState<number | "">(""); // State for maximum price filter
@@ -35,6 +37,36 @@ const ProductList: React.FC<ProductListProps> = ({
 
   const EditmodalRef = useRef<ModalRef>(null); // Reference for modal
   const AddmodalRef = useRef<ModalRef>(null); // Reference for modal
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const imagePromises = products.map(async (product) => {
+        const urls = await Promise.all(
+          product.attachments.map(async (attachmentId) => {
+            try {
+              const response = await axiosInstance.get(
+                `/attachments/${attachmentId}`,
+              );
+              return response.data.url;
+            } catch (error) {
+              console.error(`Error fetching image for ${attachmentId}:`, error);
+              return defaultPhoto; // Fallback to default photo on error
+            }
+          }),
+        );
+        return { [product._id]: urls };
+      });
+
+      const results = await Promise.all(imagePromises);
+      const imagesMap = results.reduce(
+        (acc, curr) => ({ ...acc, ...curr }),
+        {},
+      );
+      setImageUrls(imagesMap);
+    };
+
+    fetchImages();
+  }, [products]);
 
   // Function to toggle between sorting orders
   const toggleSortByRating = () => {
@@ -144,7 +176,7 @@ const ProductList: React.FC<ProductListProps> = ({
                 <GenericCard
                   item={product}
                   onClick={() => handleOpenModal(product)}
-                  images={[Xbox5, mintBluePhoto, defaultImage]}
+                  images={imageUrls[product._id] || [defaultImage]}
                   onRemove={onDelete}
                 >
                   {/* Description Section */}
@@ -316,7 +348,7 @@ const ProductList: React.FC<ProductListProps> = ({
                     description: selectedProduct.description,
                     price: selectedProduct.price,
                     available_quantity: selectedProduct.available_quantity,
-                    attachments: [], // Add an empty array or appropriate initial value for attachments
+                    attachments: [],
                   }}
                   selectedProduct={selectedProduct}
                 />
@@ -338,7 +370,7 @@ const ProductList: React.FC<ProductListProps> = ({
 
 const customStyles = {
   container:
-    "h-auto max-h-[85vh] bg-secondary-white max-w-fit border-2 border-gray-300 pr-14 pt-4 pl-20 pb-10 mx-auto",
+    "h-auto max-h-[85vh] bg-black bg-opacity-30 max-w-fit rounded-lg pr-14 pt-4 pl-20 pb-10 mx-auto",
   filterContainer: "flex items-center justify-between gap-4 mb-4",
   searchBar:
     "px-4 py-2 border border-gray-300 bg-secondary-light_grey rounded-lg w-[200px]",
@@ -349,10 +381,10 @@ const customStyles = {
     "px-4 py-2 border border-gray-300 rounded-lg bg-accent-dark-blue text-white",
   sliderContainer: "relative",
   sliderContent: "overflow-hidden",
-  sliderWrapper: "grid grid-cols-3 gap-10 max-h-[65vh] overflow-y-auto", // Set a max height and make it scrollable
+  sliderWrapper:
+    "grid grid-cols-3 gap-10 max-h-[65vh] overflow-y-auto no-scrollbar", // Set a max height and make it scrollable
   slide: "w-[22%] h-[100%] flex-shrink-0 px-2 transition-all duration-600 m-6",
-  slideContent:
-    "h-[50vh] w-[35vh] overflow-auto border-2 border-gray-300 bg-white p-6 relative cursor-pointer",
+  slideContent: "h-[50vh] w-[35vh] overflow-auto  p-6 relative cursor-pointer",
   slideTitle: "mb-2 font-bold",
   slideText: "text-sm",
   navButton:
@@ -360,7 +392,7 @@ const customStyles = {
   removeButton:
     "absolute group top-2 right-2 z-10 rounded-full border border-gray-500 bg-background-button p-1 hover:bg-red-600 focus:outline-none duration-150",
   addSlideDiv:
-    "flex items-center justify-center h-[50vh] w-[35vh] border-2 border-dashed border-gray-300 bg-white cursor-pointer hover:bg-gray-50",
+    "flex items-center justify-center h-[50vh] w-[35vh] border-2 border-dashed border-gray-300 bg-transparent cursor-pointer hover:bg-gray-50 hover:opacity-50 transition-all duration-150",
   addSlideIcon: "text-gray-400 w-16 h-16",
   navigationButtons: "flex justify-between mt-4",
   endBeginButton:

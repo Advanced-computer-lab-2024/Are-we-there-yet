@@ -5,18 +5,28 @@ import {
   ClipboardList,
   LayoutGrid,
   ImagePlus,
+  ChartNoAxesCombined,
+  Archive,
 } from "lucide-react";
 import { ModalRef } from "./modal";
 import { Product } from "../types/product";
+import axiosInstance from "../../shared/services/axiosInstance";
 
 interface ProductFormProps {
-  onSubmit?: (productData: ProductFormData) => void;
+  onSubmit?: (productData: ProductFormDataSubmit) => void;
   onUpdate?: (productData: Product) => void;
   addModalRef: React.RefObject<ModalRef>;
   initialData?: ProductFormData;
   selectedProduct?: Product;
 }
 
+export interface ProductFormDataSubmit {
+  name: string;
+  description: string;
+  price: number;
+  available_quantity: number;
+  attachments: string[];
+}
 export interface ProductFormData {
   name: string;
   description: string;
@@ -46,13 +56,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   addModalRef,
   initialData,
 }) => {
-  const [formData, setFormData] = useState<{
-    name: string;
-    description: string;
-    price: number;
-    available_quantity: number;
-    attachments: File[];
-  }>(
+  const [formData, setFormData] = useState<ProductFormData>(
     initialData || {
       name: "",
       description: "",
@@ -62,12 +66,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
     },
   );
 
+  const [previews, setPreviews] = useState<string[]>([]); // For image previews
+  const [selectedProductData, setSelectedProductData] = useState<
+    Product | undefined
+  >(selectedProduct);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
-    // Convert to number only if the field is price or available_quantity and value is not empty
     const parsedValue =
       (name === "price" || name === "available_quantity") && value !== ""
         ? Number(value)
@@ -79,31 +87,59 @@ const ProductForm: React.FC<ProductFormProps> = ({
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formDataWithAttachments = { ...formData, attachments: [] };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      setFormData({
+        ...formData,
+        attachments: fileArray,
+      });
 
-    if (onSubmit) {
-      onSubmit(formDataWithAttachments);
+      // Generate preview URLs
+      const previewUrls = fileArray.map((file) => URL.createObjectURL(file));
+      setPreviews(previewUrls);
     }
-    if (onUpdate) {
-      const product: Product = {
-        _id: selectedProduct?._id || "",
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.preventDefault();
+    const ids = [];
+    for (let i = 0; i < formData.attachments.length; i++) {
+      const fileData = new FormData();
+      fileData.append("file", formData.attachments[i]);
+      console.log(fileData);
+      console.log(formData.attachments[i]);
+      const response = await axiosInstance.post(`/attachments`, fileData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      ids.push(response.data._id);
+    }
+    if (onSubmit) {
+      console.log(formData);
+      const updatedFormData: ProductFormDataSubmit = {
+        ...formData,
+        attachments: ids,
+      };
+      onSubmit(updatedFormData);
+    }
+    if (onUpdate && selectedProduct) {
+      const updatedProduct: Product = {
+        ...selectedProduct,
         name: formData.name,
         description: formData.description,
         price: formData.price,
         available_quantity: formData.available_quantity,
-        attachments: [],
-        reviews: [],
-        seller: selectedProduct?.seller || "",
+        attachments: ids,
       };
-      onUpdate(product);
+      onUpdate(updatedProduct);
     }
     addModalRef.current?.close();
   };
 
   return (
-    <div className="mx-auto max-w-2xl rounded-xl bg-secondary-white p-8 shadow-lg">
+    <div className="mx-auto max-w-2xl rounded-xl bg-secondary-white">
       <h2 className="mb-6 flex items-center gap-2 text-2xl font-headline text-accent-dark-blue">
         <Package className="text-primary-blue" />
         {initialData?.name ? "Update Product" : "Add New Product"}
@@ -111,6 +147,21 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-6">
+          {onUpdate && (
+            <InputWrapper
+              icon={<ChartNoAxesCombined size={20} />}
+              label="Total Sales"
+            >
+              <input
+                type="number"
+                name="sales"
+                value={selectedProduct?.sales}
+                disabled
+                className="w-full rounded-lg border border-borders-primary bg-secondary-light_grey px-4 py-3 outline-none transition-all focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+              />
+            </InputWrapper>
+          )}
+
           <InputWrapper icon={<Package size={20} />} label="Product Name">
             <input
               type="text"
@@ -169,28 +220,34 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </div>
 
           <InputWrapper icon={<ImagePlus size={20} />} label="Product Images">
-            <div className="rounded-lg border-2 border-dashed border-borders-primary bg-secondary-light_grey p-6 text-center">
+            <div
+              className="cursor-pointer rounded-lg border-2 border-dashed border-borders-primary bg-secondary-light_grey p-6 text-center"
+              onClick={() => document.getElementById("file-input")?.click()}
+            >
               <ImagePlus className="mx-auto mb-2 text-primary-blue" size={32} />
               <p className="text-gray-500">
                 Drag and drop your images here or click to browse
               </p>
               <input
                 type="file"
+                id="file-input"
                 multiple
-                className="hidden"
                 accept="image/*"
-                onChange={(e) => {
-                  // Handle file upload logic here
-                  const files = e.target.files;
-                  if (files) {
-                    const attachments = Array.from(files);
-                    setFormData({
-                      ...formData,
-                      attachments,
-                    });
-                  }
-                }}
+                className="hidden"
+                onChange={handleFileChange}
               />
+            </div>
+
+            {/* Preview Section */}
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {previews.map((src, index) => (
+                <img
+                  key={index}
+                  src={src}
+                  alt={`Preview ${index + 1}`}
+                  className="h-24 w-24 rounded-md object-cover"
+                />
+              ))}
             </div>
           </InputWrapper>
         </div>
@@ -203,6 +260,31 @@ const ProductForm: React.FC<ProductFormProps> = ({
           >
             Cancel
           </button>
+          {onUpdate && (
+            <button
+              type="button"
+              onClick={() => {
+                if (selectedProduct) {
+                  // Toggle archive status directly on selectedProductData
+                  const updatedProduct = {
+                    ...selectedProduct,
+                    archive: !selectedProductData?.archive, // Toggle the archive status
+                  };
+
+                  // Update the parent with the toggled archive state
+                  onUpdate(updatedProduct);
+
+                  // Update local state for the UI to reflect the change
+                  setSelectedProductData(updatedProduct);
+                }
+              }}
+              className="mr-4 flex items-center gap-2 rounded-lg bg-accent-dark-blue px-6 py-3 font-bold text-white transition-all duration-150 hover:opacity-80"
+            >
+              <Archive size={20} />
+              {selectedProductData?.archive ? "Unarchive" : "Archive"}
+            </button>
+          )}
+
           <button
             type="submit"
             className="flex items-center gap-2 rounded-lg bg-accent-dark-blue px-6 py-3 font-bold text-white transition-all duration-150 hover:opacity-80"

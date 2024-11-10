@@ -10,10 +10,47 @@ import axiosInstance from "./axiosInstance";
 
 export async function updateUser(
   id: string,
-  data: { [key: string]: FormDataEntryValue },
+  data?: { [key: string]: FormDataEntryValue },
+  previous_work?: {
+    title: string;
+    employmentType: string;
+    company: string;
+    startDate: string;
+    endDate: string;
+    location: string;
+    locationType: string;
+    description: string;
+  }[],
+  company_profile?: {
+    industry: string;
+    headquarters: string;
+    specialties: string;
+  },
+  tags?: string[],
 ) {
-  console.log("Updating with:", data);
+  if (previous_work) {
+    axiosInstance.patch(`/users/${id}`, {
+      previous_work: previous_work,
+    });
+    return;
+  }
+
+  if (company_profile) {
+    axiosInstance.patch(`/users/${id}`, {
+      company_profile: company_profile,
+    });
+    return;
+  }
+
+  if (tags) {
+    axiosInstance.patch(`/users/${id}`, {
+      preferences: tags,
+    });
+    return;
+  }
+
   if (
+    data &&
     data[fieldNames.mobileNumber] &&
     !isValidateMobileNumber(data[fieldNames.mobileNumber])
   ) {
@@ -21,6 +58,7 @@ export async function updateUser(
   }
 
   if (
+    data &&
     data.email &&
     validateFormDataValue(fieldNames.email, data.email as string) === false
   ) {
@@ -28,6 +66,7 @@ export async function updateUser(
   }
 
   if (
+    data &&
     data.password &&
     validateFormDataValue(fieldNames.password, data.password as string) ===
       false
@@ -38,13 +77,15 @@ export async function updateUser(
   }
 
   if (
+    data &&
     data[fieldNames.hotline] &&
     !isValidateHotline(data[fieldNames.hotline])
   ) {
     return toast.error("Invalid hotline number");
   }
 
-  const APIReqObj = prepareData(data, data["account_type"]);
+  let APIReqObj;
+  if (data) APIReqObj = prepareData(data, data["account_type"]);
 
   if (!APIReqObj) {
     return;
@@ -137,6 +178,9 @@ function prepareData(
 
     if (data["profile_pic"]) {
       dataToSend["profile_pic"] = data["profile_pic"];
+    }
+    if (data["previous_work"]) {
+      dataToSend["previous_work"] = data["previous_work"];
     }
     return dataToSend;
   }

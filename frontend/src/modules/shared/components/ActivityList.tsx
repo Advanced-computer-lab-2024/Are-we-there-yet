@@ -1,5 +1,8 @@
 import axiosInstance from "../services/axiosInstance";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { BookOpenCheck, BookX, Tag } from "lucide-react";
+import { UserContext } from "../../shared/store/user-context";
+import toast from "react-hot-toast";
 
 interface Activity {
   date: string;
@@ -53,6 +56,7 @@ async function getMyActivities() {
         specialDiscounts: number;
         bookingOpen: boolean;
       }) => {
+        const id = item._id;
         const datetime = item.datetime ?? "N/A";
         const date = new Date(datetime).toLocaleDateString();
         const time = new Date(datetime).toLocaleTimeString();
@@ -74,6 +78,7 @@ async function getMyActivities() {
         const ratings = Math.floor(Math.random() * 5) + 1; // TODO: Replace with actual ratings
 
         return {
+          id,
           date,
           time,
           location,
@@ -96,24 +101,113 @@ async function getMyActivities() {
   }
 }
 
-function ActivityCard({ activity }: { activity: Activity }) {
-  const classes = "text-left text-[18px] text-ellipsis";
+function availablePill({ text }: { text: string }) {
+  const open = "bg-primary-green";
+  const close = "bg-destructive";
+  const className = `rounded-full px-4 py-1 text-text-white text-center flex items-center justify-center ${
+    text === "Open" ? open : close
+  }`;
   return (
-    <div className="grid min-h-[8rem] w-full grid-cols-9 gap-8 rounded-lg border border-gray-300 bg-card px-4 py-4">
-      <div className={classes}>{activity.date}</div>
-      <div className={classes}>{activity.time}</div>
-      <div className={classes}>{activity.location.name}</div>
-      <div className={classes}>{activity.price}</div>
-      <div className={classes}>{activity.ratings}/5</div>
-      <div className={classes}>{activity.category}</div>
-      <div className={classes}>
-        {activity.tags.map(formatText).join(", ") || "N/A"}
-      </div>
-      <div className="text-left text-base">{activity.specialDiscounts}</div>
-      <div className="text-left text-base">
-        {activity.bookingOpen ? "Open" : "Closed"}
-      </div>
+    <div className={className}>
+      {text === "Open" ? <BookOpenCheck /> : <BookX />}
     </div>
+  );
+}
+
+function ActivityTable({ activities }: { activities: Activity[] }) {
+  // get the user context
+  const { user } = useContext(UserContext);
+  const isUserTourist = user?.account_type === "Tourist" || false;
+
+  // set the class names
+  const headerClassName = "bg-accent-dark-blue text-white px-4 py-4";
+  const rowClassName =
+    "text-text-primary px-4 py-4 text-center max-w-[200px] truncate";
+
+  // function to handle booking
+  const handleBooking = async (activity: Activity) => {
+    try {
+      // make sure that booking is open
+      if (!activity.bookingOpen) {
+        toast.error("Booking is closed for this activity");
+        return;
+      }
+      // init body
+      const body = {
+        activity_id: activity.id,
+      };
+
+      // make the booking
+      const resPromise = await axiosInstance.post("activities/bookings", body);
+      const res = await resPromise.data;
+
+      // show success message
+      toast.success(res.message);
+    } catch (error) {
+      toast.error(`Error booking itinerary: ${error.message}`);
+    }
+  };
+
+  // return the table
+  return (
+    <table className="w-full rounded-lg bg-white p-4 shadow-lg">
+      <thead>
+        <tr>
+          <th className={headerClassName + " rounded-tl-lg"}>Date</th>
+          <th className={headerClassName}>Time</th>
+          <th className={headerClassName}>Location</th>
+          <th className={headerClassName}>Price</th>
+          <th className={headerClassName}>Ratings</th>
+          <th className={headerClassName}>Category</th>
+          <th className={headerClassName}>Tags</th>
+          <th className={headerClassName}>Special Discounts</th>
+          {/* custom styling for rounded edges and for user type */}
+          <th
+            className={
+              headerClassName + (!isUserTourist ? " rounded-tr-lg" : "")
+            }
+          >
+            Booking Status
+          </th>
+          {/* booking option only for tourist */}
+          {isUserTourist && (
+            <th className={headerClassName + " rounded-tr-lg"}>Actions</th>
+          )}
+        </tr>
+      </thead>
+      <tbody>
+        {activities.map((activity, index) => (
+          <tr key={index}>
+            <td className={rowClassName}>{activity.date}</td>
+            <td className={rowClassName}>{activity.time}</td>
+            <td className={rowClassName}>{activity.location.name}</td>
+            <td className={rowClassName}>{activity.price}</td>
+            <td className={rowClassName}>{activity.ratings}/5</td>
+            <td className={rowClassName}>{activity.category}</td>
+            <td className={rowClassName}>
+              {activity.tags.map(formatText).join(", ") || "N/A"}
+            </td>
+            <td className={rowClassName}>{activity.specialDiscounts}</td>
+            <td className={rowClassName}>
+              {availablePill({
+                text: activity.bookingOpen ? "Open" : "Closed",
+              })}
+            </td>
+            {/* booking option only for tourist */}
+            {isUserTourist && (
+              <td className={rowClassName}>
+                <button
+                  onClick={() => handleBooking(activity)}
+                  className="cursor-pointer rounded-lg bg-accent-dark-blue p-4 text-white transition-all duration-150 hover:scale-105"
+                >
+                  <Tag />
+                </button>
+              </td>
+            )}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -197,18 +291,18 @@ export function ActivityList() {
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* tool bar */}
-      <div className="grid grid-cols-6 gap-6 p-4">
+      <div className="grid grid-cols-6 gap-6 rounded-lg bg-secondary-light_grey px-4 py-8 shadow-lg">
         <input
           type="text"
           placeholder="Search"
-          className="h-full w-full rounded-md border border-gray-300 p-3"
+          className="h-full w-full rounded-lg border border-gray-300 p-3 shadow-lg"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <input
           type="number"
           placeholder="Max Budget"
-          className="w-full rounded-md border border-gray-300 p-3"
+          className="h-full w-full rounded-lg border border-gray-300 p-3 shadow-lg"
           value={budget ?? ""}
           onChange={(e) =>
             setBudget(e.target.value ? parseInt(e.target.value) : null)
@@ -216,21 +310,21 @@ export function ActivityList() {
         />
         <input
           type="date"
-          className="w-full rounded-md border border-gray-300 p-3"
+          className="h-full w-full rounded-lg border border-gray-300 p-3 shadow-lg"
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
         <input
           type="number"
           placeholder="Min Ratings"
-          className="w-full rounded-md border border-gray-300 p-3"
+          className="h-full w-full rounded-lg border border-gray-300 p-3 shadow-lg"
           value={ratings ?? ""}
           onChange={(e) =>
             setRatings(e.target.value ? parseInt(e.target.value) : null)
           }
         />
         <button
-          className="col-span-1 rounded-md bg-accent-gold p-3 font-semibold text-white"
+          className="col-span-1 rounded-md bg-accent-dark-blue p-3 font-semibold text-white"
           onClick={() => {
             setSortingOption({
               isSortedByPrice: !sortingOption.isSortedByPrice,
@@ -241,7 +335,7 @@ export function ActivityList() {
           Sort by {sortingOption.isSortedByPrice ? "Price" : "Ratings"}
         </button>
         <button
-          className="col-span-1 rounded-md bg-accent-gold p-3 font-semibold text-white"
+          className="col-span-1 rounded-md bg-accent-dark-blue p-3 font-semibold text-white"
           onClick={() =>
             setSortingOption({
               ...sortingOption,
@@ -253,35 +347,22 @@ export function ActivityList() {
         </button>
       </div>
 
-      {/* header */}
-      <div className="grid w-full grid-cols-9 rounded-lg border border-gray-300 bg-card px-4 py-4">
-        <div className="text-left text-lg font-semibold">Date</div>
-        <div className="text-left text-lg font-semibold">Time</div>
-        <div className="text-left text-lg font-semibold">Location</div>
-        <div className="text-left text-lg font-semibold">Price</div>
-        <div className="text-left text-lg font-semibold">Ratings</div>
-        <div className="text-left text-lg font-semibold">Category</div>
-        <div className="text-left text-lg font-semibold">Tags</div>
-        <div className="text-left text-lg font-semibold">Discount</div>
-        <div className="text-left text-lg font-semibold">Booking</div>
+      <div className="space-y-8 rounded-lg bg-secondary-light_grey p-8 shadow-lg">
+        {/* body */}
+        {loading && (
+          <div className="text-center text-xl font-semibold">Loading...</div>
+        )}
+        {error && (
+          <div className="text-center text-xl font-semibold text-red-600">
+            {error}
+          </div>
+        )}
+        {filteredData ? (
+          <ActivityTable activities={filteredData} />
+        ) : (
+          <div className="text-center text-xl font-semibold">No data found</div>
+        )}
       </div>
-
-      {/* body */}
-      {loading && (
-        <div className="text-center text-xl font-semibold">Loading...</div>
-      )}
-      {error && (
-        <div className="text-center text-xl font-semibold text-red-600">
-          {error}
-        </div>
-      )}
-      {filteredData ? (
-        filteredData?.map((activity, index) => (
-          <ActivityCard key={index} activity={activity} />
-        ))
-      ) : (
-        <div className="text-center text-xl font-semibold">No data found</div>
-      )}
     </div>
   );
 }

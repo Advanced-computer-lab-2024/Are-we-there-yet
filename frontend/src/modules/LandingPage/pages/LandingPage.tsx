@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { imgLinks } from "../../shared/utils/constants";
 import ImageSlider from "../components/ImageSlider";
 import NameAndDescription from "../components/NameAndDescription";
@@ -7,15 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function LandingPage() {
   const imgs = Object.values(imgLinks.landing_page);
   const [imgIndex, setImgIndex] = useState(imgs.length - 1);
-  const [fontColor, setFontColor] = useState("text-black");
-
-  useEffect(() => {
-    if (imgIndex === 0 || imgIndex === 1) {
-      setFontColor("text-secondary-white");
-    } else {
-      setFontColor("text-black");
-    }
-  }, [imgIndex]);
 
   return (
     <motion.div className="h-full">
@@ -40,7 +31,7 @@ export default function LandingPage() {
       </AnimatePresence>
 
       <div className="flex pt-48">
-        <NameAndDescription fontColor={fontColor} />
+        <NameAndDescription fontColor={"text=black"} />
         <ImageSlider setIndex={setImgIndex} />
       </div>
     </motion.div>
