@@ -100,6 +100,24 @@ const updateUser = async (req: Request, res: Response) => {
 const requestAccountDeletion = async (req: Request, res: Response) => {
   try {
     const userId: string = req.user.userId;
+
+    const userItineraryBookings = await userRepo.getItinerary(userId);
+    const unattendedItineraryBookings =
+      userItineraryBookings?.itinerary_bookings.filter((booking: any) =>
+        ['pending', 'confirmed'].includes(booking.status)
+      ) || [];
+
+    const userActivityBookings = await userRepo.getItinerary(userId);
+    const unattendedActivityBookings =
+      userActivityBookings?.activity_bookings.filter((booking: any) =>
+        ['pending', 'confirmed'].includes(booking.status)
+      ) || [];
+
+    if (unattendedItineraryBookings.length > 0 || unattendedActivityBookings.length > 0) {
+      res.status(ResponseStatusCodes.BAD_REQUEST).json({ message: 'You have unattended bookings' });
+      return;
+    }
+
     await userRepo.requestAccountDeletion(userId);
     const response = {
       message: 'Account deletion requested successfully',
