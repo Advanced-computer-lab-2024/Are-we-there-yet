@@ -9,7 +9,6 @@ import productRepo from '../database/repositories/product.repo';
 import currencyConverterService from '../services/currencyConverter.service';
 import userRepo from '../database/repositories/user.repo';
 import { accountType } from '../types/User.types';
-import { User } from '../database/models/user.model';
 
 const findProductById = async (req: Request, res: Response) => {
   try {
@@ -309,15 +308,15 @@ async function unarchiveProduct(req: Request, res: Response) {
 async function cancelProduct(req: Request, res: Response) {
   try {
     const productId = req.params.id;
-    const quantity = 1
+    const quantity = 1;
     const product = await productRepo.getProductById(productId);
     if (!product) {
       res.status(ResponseStatusCodes.NOT_FOUND).json({ message: 'Product not found', data: [] });
       return;
     }
-    const total = product.price? product.price * quantity : 0;
-    
-    if (!await userRepo.checkIfProductIsPurchased(req.user.userId, productId)) {
+    const total = product.price ? product.price * quantity : 0;
+
+    if (!(await userRepo.checkIfProductIsPurchased(req.user.userId, productId))) {
       res.status(ResponseStatusCodes.BAD_REQUEST).json({ message: 'Product not bought', data: [] });
       return;
     }
