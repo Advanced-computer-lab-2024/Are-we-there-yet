@@ -44,6 +44,7 @@ router.get('/howManyUsersByMonth', getHowManyUsersByMonth);
 
 router.get('/cart', cartController.getCart);
 router.post('/cart', cartController.addProduct);
+router.delete('/cart/:productId', cartController.removeProduct);
 router.get('/purchasedProducts', getPurchasedProducts);
 
 router.get('/getItineraries', getItinerary);
