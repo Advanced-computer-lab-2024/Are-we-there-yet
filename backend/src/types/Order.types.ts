@@ -1,9 +1,10 @@
 import { ProductType } from './Product.types';
 import { UserType } from './User.types';
+import { ObjectId } from 'mongodb';
 
 export interface OrderType {
   products: [OrderItemType];
-  totalPrice: number;
+  totalPrice: Number;
   status: OrderStatusType;
   created_by: UserType;
   createdAt: Date;
@@ -11,7 +12,7 @@ export interface OrderType {
 }
 
 export interface OrderItemType {
-  product: ProductType;
+  product: ObjectId | ProductType;
   quantity: number;
 }
 

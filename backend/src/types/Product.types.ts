@@ -3,7 +3,7 @@ export interface ProductType {
   _id?: string;
   name: string;
   description?: string;
-  price?: number;
+  price: number;
   available_quantity?: number;
   attachments?: number[];
   reviews?: ReviewType[];

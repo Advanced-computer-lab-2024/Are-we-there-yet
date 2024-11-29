@@ -1,8 +1,9 @@
+import { UserType } from '../../types/User.types';
 import { User } from '../models/user.model';
 import { ObjectId } from 'mongodb';
 
 class CartRepo {
-  async getUserCart(id: string) {
+  async getUserCart(id: string): Promise<UserType | null> {
     return await User.findById(id).populate('cart.product');
   }
 

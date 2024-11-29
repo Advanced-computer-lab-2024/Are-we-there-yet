@@ -1,18 +1,13 @@
 import userRepo from '../database/repositories/user.repo';
 import { UserType } from '../types/User.types';
 
-async function checkLegalAge(dob: string): Promise<boolean> {
+async function checkLegalAge(dob: Date): Promise<boolean> {
   try {
-    // Ensure dob is a string
-    dob = String(dob);
-
-    // Parse the date string to a Date object
-    const birthDate = new Date(dob);
-    if (isNaN(birthDate.getTime())) {
+    if (isNaN(dob.getTime())) {
       throw new Error('Invalid date format');
     }
 
-    const birthYear = birthDate.getFullYear();
+    const birthYear = dob.getFullYear();
     const curYear = new Date().getFullYear();
     return curYear - birthYear >= 18;
   } catch (error) {

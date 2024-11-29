@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { getAllOrders } from '../controllers/order.controller';
+import OrderController from '../controllers/order.controller';
 
 const orderRouter = Router();
 
-orderRouter.get('/', getAllOrders);
+orderRouter.get('/', OrderController.getAllOrders);
+orderRouter.post('/checkout', OrderController.checkoutOrder);
 
 export default orderRouter;

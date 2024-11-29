@@ -13,6 +13,7 @@ const productSchema = new Schema(
     },
     price: {
       type: Number,
+      required: true,
     },
     available_quantity: {
       type: Number,

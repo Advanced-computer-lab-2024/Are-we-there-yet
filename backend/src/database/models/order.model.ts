@@ -1,21 +1,10 @@
 import { model, Schema } from 'mongoose';
 import { OrderStatusType } from '../../types/Order.types';
+import { cartItemSchema } from './cart.model';
 
 const orderSchema = new Schema(
   {
-    products: [
-      {
-        product: {
-          type: Schema.Types.ObjectId,
-          ref: 'Product',
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-        },
-      },
-    ],
+    products: [cartItemSchema],
     totalPrice: {
       type: Number,
       required: true,

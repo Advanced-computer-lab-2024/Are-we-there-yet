@@ -74,8 +74,8 @@ class UserRepository {
     return await User.deleteOne({ _id: new ObjectId(id) });
   }
 
-  async ChangeUserPassword(id: string, pass: string) {
-    return await User.updateOne({ _id: new ObjectId(id) }, { password: pass });
+  async ChangeUserPassword(id: ObjectId, pass: string) {
+    return await User.updateOne({ _id: id }, { password: pass });
   }
 
   async acceptTerms(id: string) {
