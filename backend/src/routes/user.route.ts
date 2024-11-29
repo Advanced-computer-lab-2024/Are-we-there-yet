@@ -24,6 +24,7 @@ import {
   getHowManyUsers,
   getHowManyUsersByMonth,
 } from '../controllers/users/user.controller';
+import cartController from '../controllers/cart.controller';
 
 const router = Router();
 
@@ -41,6 +42,8 @@ router.patch('/requestDeletion', requestAccountDeletion);
 router.get('/howManyUsers', getHowManyUsers);
 router.get('/howManyUsersByMonth', getHowManyUsersByMonth);
 
+router.get('/cart', cartController.getCart);
+router.post('/cart', cartController.addProduct);
 router.get('/purchasedProducts', getPurchasedProducts);
 
 router.get('/getItineraries', getItinerary);

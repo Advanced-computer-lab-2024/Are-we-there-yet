@@ -18,15 +18,17 @@ const routes = Router();
 
 routes.use('/auth', authRouter);
 routes.use('/attachments', attachmentRouter);
+
 routes.use('/itineraries', itineraryRouter);
 routes.use('/museums', museumRouter);
 routes.use('/tags', tagRouter);
 routes.use('/users', userRouter);
 routes.use('/activities', activityRouter);
 routes.use('/products', productRouter);
+routes.use('/categories', categoryRouter);
+
 routes.use('/orders', orderRouter);
 routes.use('/search', searchRouter);
-routes.use('/categories', categoryRouter);
 routes.use('/complaints', complaintRouter);
 routes.use('/reviews', reviewRouter);
 routes.use('/termsAndConditions', termsRouter);

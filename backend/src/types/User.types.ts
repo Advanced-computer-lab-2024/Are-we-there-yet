@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { OrderItemType } from './Order.types';
 
 export enum accountType {
   Admin = 'Admin',
@@ -59,4 +60,5 @@ export interface UserType {
   wallet: number;
   itinerary_bookings: [Types.ObjectId];
   purchased_products: [Types.ObjectId];
+  cart: [OrderItemType];
 }

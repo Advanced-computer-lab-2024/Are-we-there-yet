@@ -9,7 +9,7 @@ class ProductRepo {
   }
 
   async getProductById(id: string) {
-    Validator.validateId(id, 'Invalid product ID');
+    // Validator.validateId(id, 'Invalid product ID');
     return await Product.findById({ _id: new ObjectId(id) }).populate(['tags', 'attachments']);
   }
 

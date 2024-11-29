@@ -3,6 +3,7 @@ import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { accountType } from '../../types/User.types';
 import { reviewSchema } from './review.model';
+import { cartItemSchema } from './cart.model';
 
 const previousWorkSchema = new mongoose.Schema({
   title: {
@@ -152,6 +153,10 @@ const userSchema = new mongoose.Schema(
     },
     purchased_products: {
       type: [{ type: Schema.Types.ObjectId, ref: 'product' }],
+    },
+    cart: {
+      type: [cartItemSchema],
+      default: [],
     },
     modified_by: {
       type: Schema.Types.ObjectId,

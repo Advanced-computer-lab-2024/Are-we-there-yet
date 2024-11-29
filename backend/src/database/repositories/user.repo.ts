@@ -156,6 +156,19 @@ class UserRepository {
       createdAt: { $gte: startDate, $lt: endDate },
     });
   }
+
+  async getUserCart(id: string) {
+    return await User.findById(id).populate('cart.product');
+  }
+
+  async addProductToCart(userId: string, productId: string, quantity: number) {
+    const cartItem = {
+      product: new ObjectId(productId),
+      quantity: quantity,
+    };
+
+    return await User.findByIdAndUpdate(userId, { $push: { cart: cartItem } }, { new: true });
+  }
 }
 
 export default new UserRepository();
