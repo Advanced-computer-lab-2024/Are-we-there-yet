@@ -5,7 +5,11 @@ import { Product } from '../models/product.model';
 
 class BookmarkRepo {
   async getBookmarks(userId: string, wishlist: boolean) {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate([
+      'bookmarks.product',
+      'bookmarks.itinerary',
+      'bookmarks.activity',
+    ]);
 
     if (wishlist) {
       return user?.bookmarks.filter((bookmark) => bookmark.product !== undefined);
@@ -40,6 +44,17 @@ class BookmarkRepo {
     const user = await User.findById(userId);
 
     return user?.bookmarks.some((bookmark) => bookmark[modelType]?.toString() === modelId);
+  }
+
+  async removeBookmark(userId: string, bookmarkId: string) {
+    const user = await User.findById(userId);
+    const bookmarkExists = user?.bookmarks.some((bookmark) => bookmark._id.toString() === bookmarkId);
+
+    if (!bookmarkExists) {
+      throw new Error('Bookmark not found');
+    }
+
+    await User.findByIdAndUpdate(userId, { $pull: { bookmarks: { _id: bookmarkId } } });
   }
 }
 

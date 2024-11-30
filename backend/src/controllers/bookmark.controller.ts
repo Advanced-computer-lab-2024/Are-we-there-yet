@@ -43,6 +43,17 @@ class BookmarkController {
       res.status(ResponseStatusCodes.INTERNAL_SERVER_ERROR).json({ message: error.message, data: [] });
     }
   }
+
+  async removeBookmark(req: Request, res: Response) {
+    try {
+      await bookmarkRepo.removeBookmark(req.user.userId, req.params.bookmarkId);
+
+      res.status(ResponseStatusCodes.OK).json({ message: 'Bookmark removed', data: [] });
+    } catch (error: any) {
+      logger.error(error.message);
+      res.status(ResponseStatusCodes.INTERNAL_SERVER_ERROR).json({ message: error.message, data: [] });
+    }
+  }
 }
 
 export default new BookmarkController();
