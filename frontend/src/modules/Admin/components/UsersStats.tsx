@@ -21,7 +21,7 @@ const MONTHS = [
 const UsersStats = () => {
   const currentYear = new Date().getFullYear();
   const [totalUsers, setTotalUsers] = useState<number>();
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [newUsersByMonth, setNewUsersByMonth] = useState<number>();
   const [error, setError] = useState<string>();
@@ -90,7 +90,7 @@ const UsersStats = () => {
 
   if (totalUsers === undefined || newUsersByMonth === undefined) {
     return (
-      <div className="mx-4 rounded-lg bg-secondary-light_grey p-6">
+      <div className="flex justify-center mx-4 rounded-lg bg-secondary-light_grey p-6">
         <div className="max-w-4xl animate-pulse">Loading...</div>
       </div>
     );

@@ -65,7 +65,7 @@ export default function AdminPromoCode() {
       axiosInstance
         .post("/promoCodes", { code, discountPercentage: discount })
         .then((res) => {
-          setPromocodes((prev) => [...prev, res.data.data.promocode]);
+          setPromocodes((prev) => [...prev, res.data]);
           ref.current?.close();
         })
         .catch((err) => console.error(err)),
@@ -154,5 +154,5 @@ export default function AdminPromoCode() {
 export async function loader() {
   return axiosInstance
     .get("/promoCodes")
-    .then((res) => res.data.data.promocodes);
+    .then((res) => res.data);
 }
