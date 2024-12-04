@@ -1,65 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Happy Birthday!</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
 
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 100%;
-        }
+      .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        width: 100%;
+      }
 
-        .container h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
+      .container h2 {
+        margin-bottom: 20px;
+        color: #333;
+      }
 
-        .container p {
-            font-size: 16px;
-            line-height: 1.5;
-            color: #555;
-        }
+      .container p {
+        font-size: 16px;
+        line-height: 1.5;
+        color: #555;
+      }
 
-        .container .promo-code {
-            font-size: 24px;
-            font-weight: bold;
-            color: #007bff;
-            margin: 20px 0;
-        }
+      .container .promo-code {
+        font-size: 24px;
+        font-weight: bold;
+        color: #007bff;
+        margin: 20px 0;
+      }
 
-        .container .footer {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #999;
-        }
+      .container .footer {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #999;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <h2>Happy Birthday, {{name}}!</h2>
-        <p>We hope you have a fantastic day! As a special gift, here is your birthday promo code:</p>
-        <div class="promo-code">{{promoCode}}</div>
-        <p>Use this code at checkout to enjoy a special discount. The code is valid for one week from today.</p>
-        <div class="footer">
-            <p>Thank you for being a valued member of our community.</p>
-        </div>
+      <h2>Happy Birthday, {{name}}!</h2>
+      <p>We hope you have a fantastic day! As a special gift, here is your birthday promo code:</p>
+      <div class="promo-code">{{promoCode}}</div>
+      <p>Use this code at checkout to enjoy a special discount. The code is valid for one week from today.</p>
+      <div class="footer">
+        <p>Thank you for being a valued member of our community.</p>
+      </div>
     </div>
-</body>
-
+  </body>
 </html>
