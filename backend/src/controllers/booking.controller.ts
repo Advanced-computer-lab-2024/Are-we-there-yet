@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { ResponseStatusCodes } from '../types/ResponseStatusCodes.types';
 import { logger } from '../middlewares/logger.middleware';
-import Validator from '../utils/Validator.utils';
 import bookingRepo from '../database/repositories/booking.repo';
 import { checkUserLegalAge } from '../utils/AgeVerification.utils';
 import userRepo from '../database/repositories/user.repo';
@@ -10,6 +9,7 @@ import StripeService from '../services/stripe.service';
 import { PaymentMethodType } from '../types/Order.types';
 import itineraryRepo from '../database/repositories/itinerary.repo';
 import activityRepo from '../database/repositories/activity.repo';
+import emailService from '../services/email/email.service';
 
 class BookingController {
   async bookItinerary(req: Request, res: Response) {
@@ -77,7 +77,15 @@ class BookingController {
 
       const booking = await bookingRepo.bookActivity(req.user.userId, activity_id, payment_method);
       await userRepo.updateUserLoyaltyPoints(req.user.userId, LOYALTY_POINT_GAIN);
-
+      await activityRepo.addTicket(req.body.activity_id);
+      const activity = await activityRepo.getActivityById(req.body.activity_id);
+      if (activity?.tickets !== undefined) {
+        const Users = await userRepo.getUsersByBookmarkedActivity(req.body.activity_id);
+        Users.forEach(async (user: any) => {
+          await userRepo.ticketsNotification(user._id, activity.tickets);
+          await emailService.ticketsUpdateEmail(user.email, activity.tickets);
+        });
+      }
       const response = {
         message: 'Booking successful',
         data: { booking: booking },

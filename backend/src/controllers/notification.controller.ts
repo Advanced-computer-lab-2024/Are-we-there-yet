@@ -20,4 +20,23 @@ const getNotifications = async (req: Request, res: Response) => {
   }
 };
 
-export { getNotifications };
+const markNotificationAsRead = async (req: Request, res: Response) => {
+  try {
+    const notificationId = req.params.notificationId;
+    await userRepo.markNotificationAsRead(req.user.userId, notificationId);
+    const user = await userRepo.findUserById(req.user.userId);
+    console.log('Notification ID:', notificationId);
+
+    const response = {
+      message: 'Notification marked as read successfully',
+      data: { notifications: user?.notifications },
+    };
+
+    res.status(ResponseStatusCodes.OK).json(response);
+  } catch (error: any) {
+    logger.error(`Error marking notification as read: ${error.message}`);
+    res.status(ResponseStatusCodes.BAD_REQUEST).json({ message: error.message, data: [] });
+  }
+};
+
+export { getNotifications, markNotificationAsRead };

@@ -40,6 +40,7 @@ const activitySchema = new Schema(
     bookingOpen: {
       type: Boolean,
       required: true,
+      default: false,
     },
     active: {
       type: Boolean,
@@ -52,6 +53,10 @@ const activitySchema = new Schema(
     modified_by: {
       type: Schema.Types.ObjectId,
       ref: 'user',
+    },
+    tickets: {
+      type: Number,
+      default: 0,
     },
   },
   {

@@ -399,6 +399,34 @@ const getHowManyUsersByMonth = async (req: Request, res: Response) => {
   }
 };
 
+const openBooking = async (req: Request, res: Response) => {
+  try {
+    const activity = await activityRepo.getActivityById(req.params.id);
+    if (!activity) {
+      res.status(ResponseStatusCodes.NOT_FOUND).send({
+        message: 'Activity not found',
+      });
+      return;
+    }
+    await activityRepo.openBooking(req.params.id);
+    const usersWithActivity = await userRepo.getUsersByBookmarkedActivity(req.params.id);
+    usersWithActivity.forEach(async (user: any) => {
+      await userRepo.bookingIsOpenNotification(user._id);
+      if (user.email) {
+        await emailService.bookingOpenEmail(user.email);
+      }
+    });
+    res.status(ResponseStatusCodes.OK).send({
+      message: 'Booking opened successfully',
+    });
+  } catch (error: any) {
+    logger.error(`Error occurred while opening booking: ${error.message}`);
+    res.status(ResponseStatusCodes.INTERNAL_SERVER_ERROR).send({
+      message: `Error occurred while opening booking: ${error.message}`,
+    });
+  }
+};
+
 export {
   getUsers,
   deleteUser,
@@ -419,4 +447,5 @@ export {
   getPurchasedProducts,
   getHowManyUsers,
   getHowManyUsersByMonth,
+  openBooking,
 };
