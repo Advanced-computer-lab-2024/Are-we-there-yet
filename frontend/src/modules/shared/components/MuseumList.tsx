@@ -164,7 +164,7 @@ function MuseumModal({
     };
     console.log(value);
     return value;
-  }
+  };
   // Animation styles
   const modalOverlayStyle = {
     transition: "opacity 0.3s ease-in-out",
@@ -195,7 +195,7 @@ function MuseumModal({
   return (
     <>
       <ShareLink ref={shareRef} link={shareLink} />
-      <Modal open>
+      <Modal open onClose={onClose}>
         <div
           className="flex items-center justify-center"
           style={modalOverlayStyle}
@@ -241,8 +241,13 @@ function MuseumModal({
               <div className="mx-8 mb-8 grid grid-cols-[70%_30%] gap-8 px-8">
                 {/* Museum info */}
                 <div className="col-span-2 h-96">
-                    <Map className="w-full h-full" defaultCenter = {handleLocation(Museum)} value = {handleLocation(Museum)}/>
-                    </div>              </div>
+                  <Map
+                    className="h-full w-full"
+                    defaultCenter={handleLocation(Museum)}
+                    value={handleLocation(Museum)}
+                  />
+                </div>{" "}
+              </div>
             </div>
           </div>
         </div>
@@ -341,12 +346,14 @@ export function MuseumList() {
       }),
     );
   }, [searchQuery, tag, data]);
-  const fetchPicture = async (pictureId: string): Promise<string | undefined> => {
+  const fetchPicture = async (
+    pictureId: string,
+  ): Promise<string | undefined> => {
     try {
       const response = await axiosInstance.get(`/attachments/${pictureId}`); // Fetch binary data
       return response.data.url;
     } catch (error) {
-      console.error('Error fetching picture:', error);
+      console.error("Error fetching picture:", error);
       return undefined;
     }
   };
@@ -370,7 +377,7 @@ export function MuseumList() {
       }
       setImageURLs(newImageURLs); // Update state with new URLs
     };
-  
+
     fetchImages();
   }, [data]);
   const handleCardClick = (Museum: Museum) => setSelectedMuseum(Museum);
@@ -391,7 +398,6 @@ export function MuseumList() {
       }
     }
   }, [data]);
-
 
   return (
     <>
@@ -443,7 +449,6 @@ export function MuseumList() {
               </div>
             </div>
           </div>
-
           {/* Museum Cards */}
           <div className="space-y-4 rounded-lg bg-secondary-white p-8 shadow-lg">
             <h2 className="text-sub-headings font-sub_headings text-accent-dark-blue">
@@ -453,65 +458,86 @@ export function MuseumList() {
               {filteredData.length > 0 ? (
                 filteredData.map((museum, index) => (
                   <div key={index}>
-                  <ShareLink ref={shareRef} link={shareLink} />
-                  <GenericCard
-                  item={museum}
-                  images={imageURLs[museum.id] ? imageURLs[museum.id] : [defaultImage]} // Pass the fetched image URL or default image
-                  onClick={() => handleCardClick(museum)} // Opens the modal on click
-                >
-                  <p className="line-clamp-2 text-body text-gray-700">{museum.description}</p>
-                   <div className={customStyles.infoRow}>
-                    <Clock size={20} className={customStyles.icon} />
-                    <p className={customStyles.slideText}>{museum.opening_hours}</p>
-                  </div>                
-                  
-                  <div className={customStyles.ticketPrices}>
-                  <p className={`${customStyles.slideText} font-bold text-accent-dark-blue text-center flex items-center justify-center`}>
-                  <CreditCard size ={20} className={customStyles.icon} /> Ticket Prices:
-                  </p>
-                   <div className={customStyles.ticketRow}>
-                    <div className={customStyles.ticketColumn}>
-                      <p className={customStyles.slideText}>Foreigner</p>
-                      <p className={customStyles.slideText2}>${museum.ticket_prices.foreigner.toFixed(2)}</p>
+                    <ShareLink ref={shareRef} link={shareLink} />
+                    <GenericCard
+                      item={museum}
+                      images={
+                        imageURLs[museum.id]
+                          ? imageURLs[museum.id]
+                          : [defaultImage]
+                      } // Pass the fetched image URL or default image
+                      onClick={() => handleCardClick(museum)} // Opens the modal on click
+                    >
+                      <p className="line-clamp-2 text-body text-gray-700">
+                        {museum.description}
+                      </p>
+                      <div className={customStyles.infoRow}>
+                        <Clock size={20} className={customStyles.icon} />
+                        <p className={customStyles.slideText}>
+                          {museum.opening_hours}
+                        </p>
                       </div>
-                      <div className={customStyles.ticketColumn}>
-                        <p className={customStyles.slideText}>Native</p>
-                        <p className={customStyles.slideText2}>${museum.ticket_prices.native.toFixed(2)}</p>
-                        </div>
-                        <div className={customStyles.ticketColumn}>
-                          <p className={customStyles.slideText}>Student</p>
-                          <p className={customStyles.slideText2}>${museum.ticket_prices.student.toFixed(2)}</p>
+
+                      <div className={customStyles.ticketPrices}>
+                        <p
+                          className={`${customStyles.slideText} flex items-center justify-center text-center font-bold text-accent-dark-blue`}
+                        >
+                          <CreditCard size={20} className={customStyles.icon} />{" "}
+                          Ticket Prices:
+                        </p>
+                        <div className={customStyles.ticketRow}>
+                          <div className={customStyles.ticketColumn}>
+                            <p className={customStyles.slideText}>Foreigner</p>
+                            <p className={customStyles.slideText2}>
+                              ${museum.ticket_prices.foreigner.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className={customStyles.ticketColumn}>
+                            <p className={customStyles.slideText}>Native</p>
+                            <p className={customStyles.slideText2}>
+                              ${museum.ticket_prices.native.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className={customStyles.ticketColumn}>
+                            <p className={customStyles.slideText}>Student</p>
+                            <p className={customStyles.slideText2}>
+                              ${museum.ticket_prices.student.toFixed(2)}
+                            </p>
                           </div>
                         </div>
-                  <div className={`items-center justify-center mt-2`}>
-                  <p className={`${customStyles.slideText} font-bold text-accent-dark-blue text-center flex items-center justify-center`}>
-                  <MapPin size ={30} className={customStyles.icon} /> Location:
-                  </p>
-                    <p className={customStyles.slideText}>{museum.location.name}</p>
+                        <div className={`mt-2 items-center justify-center`}>
+                          <p
+                            className={`${customStyles.slideText} flex items-center justify-center text-center font-bold text-accent-dark-blue`}
+                          >
+                            <MapPin size={30} className={customStyles.icon} />{" "}
+                            Location:
+                          </p>
+                          <p className={customStyles.slideText}>
+                            {museum.location.name}
+                          </p>
+                        </div>
+                        <div className={`${customStyles.infoRow} mt-2`}>
+                          {museum.tags.length > 0 &&
+                            museum.tags.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="mt-3 inline-flex items-center rounded-full bg-primary-green px-2.5 py-0.5 text-xs font-semibold text-gray-900 transition-colors hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                        </div>
+                        <div className={`${customStyles.infoRow} mt-2`}>
+                          <Share
+                            onClick={() => {
+                              handleShare(museum);
+                            }}
+                            className="cursor-pointer transition-all duration-150 hover:scale-110"
+                          />
+                        </div>
+                      </div>
+                    </GenericCard>
                   </div>
-                  <div className={`${customStyles.infoRow} mt-2`}>
-                    {museum.tags.length > 0 && (
-                      museum.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="mt-3 inline-flex items-center rounded-full bg-primary-green px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 bg-primary-green text-gray-900 hover:bg-primary-blue text-xs"      >
-                        {tag}
-                      </span>
-                      ))
-                    )}
-                  </div>
-                  <div className={`${customStyles.infoRow} mt-2`}>
-                  <Share
-                onClick={() => {
-                  handleShare(museum);
-                }}
-                className="cursor-pointer transition-all duration-150 hover:scale-110 "
-              />
-                </div>
-                </div>
-                </GenericCard>
-   
-                </div>
                 ))
               ) : (
                 <div className="flex h-64 items-center justify-center rounded-lg bg-secondary-light_grey">
@@ -522,7 +548,6 @@ export function MuseumList() {
               )}
             </div>
           </div>
-
           Museum Modal
           {selectedMuseum && (
             <MuseumModal Museum={selectedMuseum} onClose={handleCloseModal} />
@@ -533,18 +558,21 @@ export function MuseumList() {
   );
 }
 const customStyles = {
-  container: "h-auto max-h-[100vh] bg-secondary-white max-w-fit border-2 border-gray-300 pr-2 pt-4 pl-10 pb-10 mx-auto",
+  container:
+    "h-auto max-h-[100vh] bg-secondary-white max-w-fit border-2 border-gray-300 pr-2 pt-4 pl-10 pb-10 mx-auto",
   sliderContainer: "relative",
   sliderContent: "overflow-hidden",
-  sliderWrapper: "grid grid-cols-3 gap-12 max-h-[70vh] overflow-y-auto pr-6 pt-2", // Set a max height and make it scrollable
+  sliderWrapper:
+    "grid grid-cols-3 gap-12 max-h-[70vh] overflow-y-auto pr-6 pt-2", // Set a max height and make it scrollable
   slideText: "text-sm mt-1",
   slide: "w-[50%] h-[100%] flex-shrink-0 px-2 transition-all duration-600 m-6",
-  addSlideDiv: "flex items-center justify-center h-[50vh] w-[35vh] border-2 border-dashed border-gray-300 bg-white cursor-pointer hover:bg-gray-50",
+  addSlideDiv:
+    "flex items-center justify-center h-[50vh] w-[35vh] border-2 border-dashed border-gray-300 bg-white cursor-pointer hover:bg-gray-50",
   addSlideIcon: "text-gray-400 w-16 h-16",
   infoRow: "flex items-center justify-center mb-2", // Center align info rows
   ticketPrices: "text-center mt-2",
   ticketRow: "flex justify-between", // Flex container for the ticket row
   ticketColumn: "flex flex-col items-center", // Flex column for each ticket type
   slideText2: "text-sm text-gray-700", // Adjusted text styles as needed // Margin for icons
-  icon: " text-blue-600 mr-2"
+  icon: " text-blue-600 mr-2",
 };

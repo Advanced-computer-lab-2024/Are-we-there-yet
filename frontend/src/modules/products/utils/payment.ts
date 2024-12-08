@@ -24,28 +24,27 @@ export async function payWithStripe({
 
   const domainName = window.location.origin;
 
-  const body: {
-    address_id?: string;
-    activity_id?: string;
-    itinerary_id?: string;
-    success_url: string;
-    cancel_url: string;
-  } = {
-    success_url: `${domainName}/home/checkout/confirm/{CHECKOUT_SESSION_ID}`,
+  const body: { [key: string]: string } = {
     cancel_url: `${domainName}/home/checkout/cancel`,
   };
 
+  let success_url = `${domainName}/home/checkout/confirm`;
   if (address_id) {
     body["address_id"] = address_id;
+    success_url += `/cart`;
   }
 
   if (activity_id) {
     body["activity_id"] = activity_id;
+    success_url += `/activity`;
   }
 
   if (itinerary_id) {
     body["itinerary_id"] = itinerary_id;
+    success_url += `/itinerary`;
   }
+
+  body["success_url"] = success_url + "/{CHECKOUT_SESSION_ID}";
 
   const sessionResponse = await toast.promise(
     axiosInstance.post("/orders/payment/card", body),

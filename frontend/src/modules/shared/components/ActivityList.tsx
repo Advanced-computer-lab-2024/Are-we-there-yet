@@ -1,4 +1,12 @@
-import { BookOpenCheck, BookX, Tag, Share, Bookmark } from "lucide-react";
+import {
+  BookOpenCheck,
+  BookX,
+  Share,
+  Bookmark,
+  Coins,
+  Wallet2,
+  CreditCard,
+} from "lucide-react";
 import { useEffect, useState, useContext, useRef } from "react";
 import Modal, { ModalRef } from "@/modules/shared/components/Modal";
 import { UserContext } from "../../shared/store/user-context";
@@ -6,6 +14,7 @@ import axiosInstance from "../services/axiosInstance";
 import ShareLink from "./ShareLink";
 import toast from "react-hot-toast";
 import Map from "./Map";
+import { payWithStripe } from "@/modules/products/utils/payment";
 
 interface Activity {
   name: string;
@@ -18,7 +27,7 @@ interface Activity {
   };
   price: number;
   ratings: number;
-  category: {name: string};
+  category: { name: string };
   tags: {
     name: string;
     type: string;
@@ -29,10 +38,10 @@ interface Activity {
 }
 const renderStars = (rating: number) => {
   const filledStars = "★".repeat(Math.floor(rating));
-  const halfStar = rating % 1 >= 0.5; 
-  const emptyStars = "☆".repeat(5 - Math.floor(rating) - ((halfStar)?1:0));
+  const halfStar = rating % 1 >= 0.5;
+  const emptyStars = "☆".repeat(5 - Math.floor(rating) - (halfStar ? 1 : 0));
   return (
-    <span className="text-yellow-500 text-2xl">
+    <span className="text-2xl text-yellow-500">
       {filledStars}
       {halfStar && "⯨"}
       {emptyStars}
@@ -47,7 +56,7 @@ const handleLocation = (activity: Activity) => {
   };
   console.log(value);
   return value;
-}
+};
 const formatText = (text: string) => {
   const maxLength = 5 * 3;
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
@@ -70,7 +79,7 @@ async function getMyActivities() {
           latitude: number;
           longitude: number;
         };
-        category: {name: string};
+        category: { name: string };
         price: number;
         tags: {
           name: string;
@@ -172,14 +181,14 @@ function ActivityCard({
     >
       {/* Activity Name */}
       <div className="grid gap-3 px-6 pb-4 pt-2">
-      <div className="p-4 text-center text-lg font-semibold text-accent-dark-blue">
-        {activity.name}  {renderStars(activity.ratings)}
+        <div className="p-4 text-center text-lg font-semibold text-accent-dark-blue">
+          {activity.name} {renderStars(activity.ratings)}
+        </div>
+        <div className="text-center text-gray-600">
+          {activity.date} {activity.time}
+        </div>
       </div>
-      <div className="text-center text-gray-600">
-        {activity.date} {activity.time}
-      </div>
-      </div>
-      </div>
+    </div>
   );
 }
 function ActivityModal({
@@ -192,6 +201,7 @@ function ActivityModal({
   // states for the animation
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const { user } = useContext(UserContext);
   const isUserTourist = user?.account_type === "Tourist" || false;
@@ -242,31 +252,36 @@ function ActivityModal({
       toast.error("No itinerary selected to  be bookmarked");
     }
   };
+
   // function to handle booking
-  const handleBooking = async () => {
-    try {
-      // make sure that booking is open
-      if (!activity.bookingOpen) {
-        console.log("Booking is open");
-        toast.error("Booking is closed for this activity");
-        return;
-      }
-      console.log(activity);
-      // init body
-      const body = {
-        activity_id: activity.id,
-      };
-
-      // make the booking
-      const resPromise = await axiosInstance.post("activities/bookings", body);
-      const res = await resPromise.data;
-
-      // show success message
-      toast.success(res.message);
-    } catch (error) {
-      toast.error(`Error booking activity: ${error.message}`);
+  const handlePayment = async (paymentMethod: string) => {
+    switch (paymentMethod) {
+      case "cash":
+      case "wallet":
+        toast.promise(
+          axiosInstance
+            .post("/activities/bookings", {
+              activity_id: activity.id,
+              payment_method: paymentMethod,
+            })
+            .finally(() => setIsOpen(false)),
+          {
+            loading: "Processing...",
+            success: "Order placed successfully",
+            error: (error) => error.response.data.message,
+          },
+        );
+        break;
+      case "card":
+        payWithStripe({
+          activity_id: activity.id,
+        });
+        break;
+      default:
+        console.error("Invalid payment method");
     }
   };
+
   // functions to handle the sharing modal
   const shareRef = useRef<ModalRef>(null);
   const [shareLink, setShareLink] = useState<string>("");
@@ -275,10 +290,10 @@ function ActivityModal({
     const baseLink = window.location.origin;
     // get the activity link
     const activityLink: string = "/all-activities";
-    
+
     // get the activity id
     const activityId: string = activity.id;
-    
+
     // format the actual link
     const link: string = `${baseLink}${activityLink}/${activityId}`;
 
@@ -290,7 +305,7 @@ function ActivityModal({
   };
   return (
     <>
-      <Modal open>
+      <Modal open={isOpen} onClose={onClose}>
         <div
           className="flex items-center justify-center backdrop-blur-sm"
           style={modalOverlayStyle}
@@ -329,8 +344,11 @@ function ActivityModal({
                     }}
                     className="cursor-pointer transition-all duration-150 hover:scale-110"
                   />
-                   <button onClick={handleAddBookmark} className="cursor-pointer transition-all duration-150 hover:scale-110">
-                    <Bookmark size={20}/>
+                  <button
+                    onClick={handleAddBookmark}
+                    className="cursor-pointer transition-all duration-150 hover:scale-110"
+                  >
+                    <Bookmark size={20} />
                   </button>
                   <h2 className="text-headline font-headline text-accent-dark-blue">
                     {activity.name} {renderStars(activity.ratings)}
@@ -338,13 +356,19 @@ function ActivityModal({
                 </div>
                 <div className="mt-2 h-1 w-full rounded-full bg-primary-blue"></div>
               </div>
-              <div className="grid grid-cols-1 gap-8 lg:grid-cols-4 lg:grid-rows-1 relative">
-              <div className="space-y-6 rounded-lg bg-secondary-light_grey p-6 lg:col-span-2 lg:row-span-2">
-              {[
+              <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-4 lg:grid-rows-1">
+                <div className="space-y-6 rounded-lg bg-secondary-light_grey p-6 lg:col-span-2 lg:row-span-2">
+                  {[
                     { label: "Price", value: activity.price.toFixed(2) },
-                    { label: "Category", value: activity.category.name || "N/A" },
-                    { label: "Tags", value: activity.tags.join(", ") || "N/A"},
-                    { label: "Special Discounts", value: activity.specialDiscounts },
+                    {
+                      label: "Category",
+                      value: activity.category.name || "N/A",
+                    },
+                    { label: "Tags", value: activity.tags.join(", ") || "N/A" },
+                    {
+                      label: "Special Discounts",
+                      value: activity.specialDiscounts,
+                    },
                   ].map((item, index) => (
                     <div key={index} className="space-y-1">
                       <div className="text-sub-headings font-sub_headings text-accent-dark-blue">
@@ -355,39 +379,59 @@ function ActivityModal({
                       </div>
                     </div>
                   ))}
-                    </div>
-                    <div className="space-y-4">
+                </div>
+                <div className="space-y-4">
                   <h3 className="text-sub-headings font-sub_headings text-accent-dark-blue">
-                  Location
+                    Location
                   </h3>
                   <div className="col-span-2 h-96">
-                    <Map className="w-full h-full" defaultCenter = {handleLocation(activity)} value = {handleLocation(activity)}/>
-                    </div>
+                    <Map
+                      className="h-full w-full"
+                      defaultCenter={handleLocation(activity)}
+                      value={handleLocation(activity)}
+                    />
+                  </div>
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-sub-headings font-sub_headings text-accent-dark-blue">
                     Available Dates & Times
                   </h3>
                   <div className="text-body text-text-primary">
-                          {activity.date}, {activity.time}
-                        </div>
-                    </div>
+                    {activity.date}, {activity.time}
                   </div>
+                </div>
+              </div>
               <div className="col-span-2 mt-5 flex justify-end">
-                  {isUserTourist && (
+                {isUserTourist && (
+                  <div className="col-span-2 flex justify-end">
+                    {/* cash on delivery */}
                     <button
-                      onClick={handleBooking}
-                      className="flex items-center gap-2 rounded-lg bg-accent-gold text-black px-10 py-3 font-bold text-text-primary transition-all duration-150 hover:opacity-80"
-                      >                    
-                      <h4 className="text-sub-headings font-sub_headings ">
-                        Book Now
-                      </h4>
+                      className="mr-4 mt-10 flex items-center gap-3 rounded-lg bg-accent-gold px-8 py-4 text-lg font-bold transition-all duration-150 hover:opacity-80"
+                      onClick={() => handlePayment("cash")}
+                    >
+                      <Coins size={30} />
+                      Cash On Delivery
                     </button>
-                  )}
+                    <button
+                      className="mr-4 mt-10 flex w-fit items-center gap-3 rounded-lg bg-accent-gold px-8 py-4 text-lg font-bold transition-all duration-150 hover:opacity-80"
+                      onClick={() => handlePayment("wallet")}
+                    >
+                      <Wallet2 size={30} />
+                      Pay By Wallet
+                    </button>
+                    <button
+                      className="ml-4 mt-10 flex items-center gap-3 rounded-lg bg-accent-gold px-8 py-4 text-lg font-bold transition-all duration-150 hover:opacity-80"
+                      onClick={() => handlePayment("card")}
+                    >
+                      <CreditCard size={30} />
+                      Pay Online
+                    </button>
                   </div>
-                  </div>
-                  </div>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
       </Modal>
       <ShareLink ref={shareRef} link={shareLink} />
     </>
@@ -398,9 +442,6 @@ export function ActivityList() {
   // get the url
   const url = window.location.href;
   const activityId: string = url.split("/").pop() ?? "";
-
-  // get the user context
-  const { user } = useContext(UserContext);
 
   // get the data using axios
   const [data, setData] = useState<Activity[] | null>(null);
@@ -494,7 +535,7 @@ export function ActivityList() {
     if (!data) return;
     // get the activity name given the id
     for (const activity of data) {
-      if (activity._id === activityId) {
+      if (activity.id === activityId) {
         setSearchQuery(activity.name);
         break;
       }
@@ -546,7 +587,8 @@ export function ActivityList() {
               setFilteredData(
                 data?.filter(
                   (item) =>
-                    item.category.name === e.target.value || e.target.value === "",
+                    item.category.name === e.target.value ||
+                    e.target.value === "",
                 ) ?? [],
               );
             }}
@@ -596,29 +638,26 @@ export function ActivityList() {
           </div>
         )}
         {filteredData.length === 0 ? (
-              <div className="flex h-64 items-center justify-center rounded-lg bg-secondary-light_grey">
-                <p className="text-body text-muted-foreground">
-                  No activities found matching your criteria
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredData.map((activity, index) => (
-                  <ActivityCard
-                    key={index}
-                    activity={activity}
-                    onCardClick={() => handleCardClick(activity)}
-                  />
-                ))}
-              </div>
-            )}
+          <div className="flex h-64 items-center justify-center rounded-lg bg-secondary-light_grey">
+            <p className="text-body text-muted-foreground">
+              No activities found matching your criteria
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredData.map((activity, index) => (
+              <ActivityCard
+                key={index}
+                activity={activity}
+                onCardClick={() => handleCardClick(activity)}
+              />
+            ))}
+          </div>
+        )}
       </div>
       {selectedActivity && (
-            <ActivityModal
-              activity={selectedActivity}
-              onClose={handleCloseModal}
-            />
-          )}
+        <ActivityModal activity={selectedActivity} onClose={handleCloseModal} />
+      )}
     </div>
   );
 }

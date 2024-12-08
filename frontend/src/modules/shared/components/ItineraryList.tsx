@@ -3,10 +3,11 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { UserContext } from "../../shared/store/user-context";
 import { ModalRef } from "@/modules/shared/components/Modal";
 import Modal from "@/modules/shared/components/Modal";
-import { Bookmark, Share } from "lucide-react";
+import { Bookmark, Coins, CreditCard, Share, Wallet2 } from "lucide-react";
 import toast from "react-hot-toast";
 import ShareLink from "./ShareLink";
 import Map from "./Map";
+import { payWithStripe } from "@/modules/products/utils/payment";
 
 async function getMyItineraries() {
   try {
@@ -80,31 +81,29 @@ async function getMyItineraries() {
   }
 }
 const handleLocation = (itinerary: Itinerary, isDrop: boolean) => {
-  if(isDrop){
-  const value = {
-    lat: itinerary.dropoffLocation.latitude,
-    lng: itinerary.dropoffLocation.longitude,
-    name: itinerary.dropoffLocation.name,
-  };
-  return value;
-}
-else{
-  const value = {
-    lat: itinerary.pickupLocation.latitude,
-    lng: itinerary.pickupLocation.longitude,
-    name: itinerary.pickupLocation.name,
-  };
-  return value;
-}
-}
-
+  if (isDrop) {
+    const value = {
+      lat: itinerary.dropoffLocation.latitude,
+      lng: itinerary.dropoffLocation.longitude,
+      name: itinerary.dropoffLocation.name,
+    };
+    return value;
+  } else {
+    const value = {
+      lat: itinerary.pickupLocation.latitude,
+      lng: itinerary.pickupLocation.longitude,
+      name: itinerary.pickupLocation.name,
+    };
+    return value;
+  }
+};
 
 const renderStars = (rating: number) => {
   const filledStars = "★".repeat(Math.floor(rating));
-  const halfStar = rating % 1 >= 0.5; 
-  const emptyStars = "☆".repeat(5 - Math.floor(rating) - ((halfStar)?1:0));
+  const halfStar = rating % 1 >= 0.5;
+  const emptyStars = "☆".repeat(5 - Math.floor(rating) - (halfStar ? 1 : 0));
   return (
-    <span className="text-yellow-500 text-2xl">
+    <span className="text-2xl text-yellow-500">
       {filledStars}
       {halfStar && "⯨"}
       {emptyStars}
@@ -144,7 +143,7 @@ const formatTime = (time: string) => {
   return parsedTime.toLocaleTimeString("en-GB");
 };
 const formatTimeline = (timeline: string) => {
-  if(timeline=="N/A"){
+  if (timeline == "N/A") {
     return "N/A";
   }
   const [start, end] = timeline.split(" - ");
@@ -163,6 +162,7 @@ function ItineraryModal({
   // states for the animation
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const { user } = useContext(UserContext);
   const isUserTourist = user?.account_type === "Tourist" || false;
@@ -213,25 +213,33 @@ function ItineraryModal({
       toast.error("No itinerary selected to  be bookmarked");
     }
   };
+
   // function to handle booking
-  const handleBooking = async () => {
-    try {
-      // init body
-      const body = {
-        itinerary_id: itinerary.id,
-      };
-
-      // make the booking
-      const resPromise = await axiosInstance.post(
-        "/itineraries/bookings",
-        body,
-      );
-      const res = await resPromise.data;
-
-      // show success message
-      toast.success(res.message);
-    } catch (error) {
-      toast.error(`Error booking itinerary: ${error.message}`);
+  const handlePayment = async (paymentMethod: string) => {
+    switch (paymentMethod) {
+      case "cash":
+      case "wallet":
+        toast.promise(
+          axiosInstance
+            .post("/itineraries/bookings", {
+              itinerary_id: itinerary.id,
+              payment_method: paymentMethod,
+            })
+            .finally(() => setIsOpen(false)),
+          {
+            loading: "Processing...",
+            success: "Order placed successfully",
+            error: (error) => error.response.data.message,
+          },
+        );
+        break;
+      case "card":
+        payWithStripe({
+          itinerary_id: itinerary.id,
+        });
+        break;
+      default:
+        console.error("Invalid payment method");
     }
   };
 
@@ -251,7 +259,7 @@ function ItineraryModal({
   };
   return (
     <>
-      <Modal open>
+      <Modal open={isOpen} onClose={onClose}>
         <div
           className="flex items-center justify-center backdrop-blur-sm"
           style={modalOverlayStyle}
@@ -291,8 +299,11 @@ function ItineraryModal({
                     }}
                     className="cursor-pointer transition-all duration-150 hover:scale-110"
                   />
-                  <button onClick={handleAddBookmark} className="cursor-pointer transition-all duration-150 hover:scale-110">
-                    <Bookmark size={20}/>
+                  <button
+                    onClick={handleAddBookmark}
+                    className="cursor-pointer transition-all duration-150 hover:scale-110"
+                  >
+                    <Bookmark size={20} />
                   </button>
 
                   <h2 className="text-headline font-headline text-accent-dark-blue">
@@ -303,7 +314,7 @@ function ItineraryModal({
               </div>
 
               {/* Itinerary details */}
-              <div className="grid grid-cols-1 gap-8 lg:grid-cols-4 lg:grid-rows-1 relative">
+              <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-4 lg:grid-rows-1">
                 {/* Basic Info */}
                 <div className="space-y-6 rounded-lg bg-secondary-light_grey p-6 lg:col-span-2 lg:row-span-2">
                   {[
@@ -311,7 +322,10 @@ function ItineraryModal({
                     { label: "Price", value: itinerary.price.toFixed(2) },
                     { label: "Category", value: itinerary.category.name },
                     { label: "Tags", value: itinerary.tags.join(", ") },
-                    { label: "Timeline", value: formatTimeline(itinerary.timeline) },
+                    {
+                      label: "Timeline",
+                      value: formatTimeline(itinerary.timeline),
+                    },
                     {
                       label: "Accessibilities",
                       value: itinerary.accessibilities ? "Yes" : "No",
@@ -327,22 +341,30 @@ function ItineraryModal({
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="space-y-4">
                   <h3 className="text-sub-headings font-sub_headings text-accent-dark-blue">
                     Drop Off Location
                   </h3>
                   <div className="col-span-2 h-96">
-                    <Map className="w-full h-full" defaultCenter = {handleLocation(itinerary, true)} value = {handleLocation(itinerary, true)}/>
-                    </div>
+                    <Map
+                      className="h-full w-full"
+                      defaultCenter={handleLocation(itinerary, true)}
+                      value={handleLocation(itinerary, true)}
+                    />
+                  </div>
                 </div>
                 <div className="space-y-4">
                   <h3 className="text-sub-headings font-sub_headings text-accent-dark-blue">
                     Pick Up Location
                   </h3>
                   <div className="col-span-2 h-96">
-                    <Map className="w-full h-full" defaultCenter = {handleLocation(itinerary, false)} value = {handleLocation(itinerary, false)}/>
-                    </div>
+                    <Map
+                      className="h-full w-full"
+                      defaultCenter={handleLocation(itinerary, false)}
+                      value={handleLocation(itinerary, false)}
+                    />
+                  </div>
                 </div>
                 {/* Date and Time */}
                 <div className="space-y-4">
@@ -353,10 +375,11 @@ function ItineraryModal({
                     <div className="overflow-hidden rounded-lg">
                       <div>
                         <div className="text-body text-text-primary">
-                          {formatDate(itinerary.availableDateTimes[0].date)} {formatTime(itinerary.availableDateTimes[0].time)}
+                          {formatDate(itinerary.availableDateTimes[0].date)}{" "}
+                          {formatTime(itinerary.availableDateTimes[0].time)}
                         </div>
-                   </div>
-                  </div>
+                      </div>
+                    </div>
                   ) : (
                     <div className="rounded-lg bg-secondary-light_grey p-4 text-center text-body">
                       No available dates and times
@@ -371,9 +394,9 @@ function ItineraryModal({
                   </h3>
                   {itinerary.activities.length !== 0 ? (
                     <div className="overflow-hidden rounded-lg">
-                            <div className="text-body text-text-primary">
-                              {itinerary.activities[0].name}
-                            </div>
+                      <div className="text-body text-text-primary">
+                        {itinerary.activities[0].name}
+                      </div>
                     </div>
                   ) : (
                     <div className="rounded-lg bg-secondary-light_grey p-4 text-center text-body">
@@ -381,22 +404,37 @@ function ItineraryModal({
                     </div>
                   )}
                 </div>
-                 {/* booking */}
-                 
+                {/* booking */}
               </div>
             </div>
-        <div className="col-span-2 mt-5 flex justify-end">
-                  {isUserTourist && (
-                    <button
-                      onClick={handleBooking}
-                      className="flex items-center gap-2 rounded-lg bg-accent-gold px-10 py-3 font-bold text-text-primary transition-all duration-150 hover:opacity-80"
-                      >                    
-                      <h4 className="text-sub-headings font-sub_headings">
-                        Book Now
-                      </h4>
-                    </button>
-                  )}
-                  </div>
+            <div className="col-span-2 mt-5 flex justify-end">
+              {isUserTourist && (
+                <div className="col-span-2 flex justify-end">
+                  {/* cash on delivery */}
+                  <button
+                    className="mr-4 mt-10 flex items-center gap-3 rounded-lg bg-accent-gold px-8 py-4 text-lg font-bold transition-all duration-150 hover:opacity-80"
+                    onClick={() => handlePayment("cash")}
+                  >
+                    <Coins size={30} />
+                    Cash On Delivery
+                  </button>
+                  <button
+                    className="mr-4 mt-10 flex w-fit items-center gap-3 rounded-lg bg-accent-gold px-8 py-4 text-lg font-bold transition-all duration-150 hover:opacity-80"
+                    onClick={() => handlePayment("wallet")}
+                  >
+                    <Wallet2 size={30} />
+                    Pay By Wallet
+                  </button>
+                  <button
+                    className="ml-4 mt-10 flex items-center gap-3 rounded-lg bg-accent-gold px-8 py-4 text-lg font-bold transition-all duration-150 hover:opacity-80"
+                    onClick={() => handlePayment("card")}
+                  >
+                    <CreditCard size={30} />
+                    Pay Online
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </Modal>
@@ -419,7 +457,7 @@ function ItineraryCard({
     >
       {/* Itinerary Name */}
       <div className="p-4 text-center text-lg font-semibold text-accent-dark-blue">
-        {itinerary.name}  {renderStars(itinerary.rating)}
+        {itinerary.name} {renderStars(itinerary.rating)}
       </div>
 
       {/* Activity List */}
@@ -481,7 +519,7 @@ export function ItineraryList() {
         const matchesSearchQuery =
           searchQuery === "" ||
           item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.category.name
+          item.category?.name
             .toLowerCase()
             .includes(searchQuery.toLowerCase()) ||
           item.tags.some((tag) =>

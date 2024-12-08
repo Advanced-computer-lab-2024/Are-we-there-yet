@@ -1,6 +1,4 @@
-import { useContext } from "react";
 import { ActivityList } from "../components/ActivityList";
-import { UserContext } from "../store/user-context";
 
 export function AllActivities() {
   return (

@@ -4,15 +4,28 @@ import { redirect, type LoaderFunctionArgs } from "react-router";
 import { CheckCircle, Gift, Sparkles } from "lucide-react";
 import { AlertTriangle, CreditCard } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 export async function confirmPayment({ params }: LoaderFunctionArgs) {
-  if (!params.sessionId) {
+  if (!params.sessionId || !params.type) {
     throw new Error("Session id is required!!");
   }
 
+  console.log(params);
+
+  let apiEndpoint = "";
+  if (params.type === "cart") {
+    apiEndpoint = "/orders/checkout";
+  } else if (params.type === "activity") {
+    apiEndpoint = "/activities/bookings";
+  } else if (params.type === "itinerary") {
+    apiEndpoint = "/itineraries/bookings";
+  } else {
+    throw new Error("Invalid payment method");
+  }
+
   try {
-    await axiosInstance.post("/orders/checkout", {
+    await axiosInstance.post(apiEndpoint, {
       session_id: params.sessionId,
       payment_method: "card",
     });
@@ -99,13 +112,6 @@ export const PaymentFailurePage = () => {
               <p className="text-red-600">{error.current}</p>
             </div>
           </div>
-
-          <Link
-            to=""
-            className="flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-orange-500 to-red-500 py-3 text-white transition-colors hover:from-orange-600 hover:to-red-600"
-          >
-            Go to Cart
-          </Link>
         </div>
       </div>
     </div>

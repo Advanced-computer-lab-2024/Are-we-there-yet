@@ -144,7 +144,7 @@ const BrowserRouter = createBrowserRouter([
         path: "checkout",
         children: [
           {
-            path: "confirm/:sessionId",
+            path: "confirm/:type/:sessionId",
             element: <Outlet />,
             loader: confirmPayment,
           },
