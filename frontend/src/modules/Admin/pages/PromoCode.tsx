@@ -120,7 +120,10 @@ export default function AdminPromoCode() {
           <h1 className="text-2xl font-bold text-primary-blue">
             Add Promo Code
           </h1>
-          <form onSubmit={handleAddPromoCode}>
+          <form
+            className="flex w-full flex-col justify-center gap-4"
+            onSubmit={handleAddPromoCode}
+          >
             <input
               type="text"
               name="code"
@@ -149,7 +152,5 @@ export default function AdminPromoCode() {
 }
 
 export async function loader() {
-  return axiosInstance
-    .get("/promoCodes")
-    .then((res) => res.data);
+  return axiosInstance.get("/promoCodes").then((res) => res.data);
 }
